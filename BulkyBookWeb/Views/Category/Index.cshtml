@@ -26,10 +26,10 @@
 	<thead>
 		<tr>
 			<th>
-				Category Name
+				<a asp-action="Index" asp-route-sortOrder="@ViewData["NameSortParm"]">@Html.DisplayNameFor(model => model.Name)</a>
 			</th>
 			<th>
-				Display Order
+				<a asp-action="Index" asp-route-sortOrder="@ViewData["OrderSortParm"]">@Html.DisplayNameFor(model => model.DisplayOrder)</a>
 			</th>
 			<th></th>
 		</tr>

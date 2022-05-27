@@ -1,6 +1,7 @@
 ﻿using BulkyBookWeb.Data;
 using BulkyBookWeb.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace BulkyBookWeb.Controllers
 {
@@ -12,10 +13,36 @@ namespace BulkyBookWeb.Controllers
         {
             this.dbContext = dbContext;
         }
-        public IActionResult Index()
+        //public IActionResult Index()
+        //{
+        //    IEnumerable<Category> objectCategoryList = dbContext.Categories;
+        //    return View(objectCategoryList);
+        //}
+
+        public async Task<IActionResult> Index(string sortOrder)
         {
-            IEnumerable<Category> objectCategoryList = dbContext.Categories;
-            return View(objectCategoryList);
+            ViewData["NameSortParm"] = String.IsNullOrEmpty(sortOrder) ? "NameDesc" : "";
+            ViewData["OrderSortParm"] = sortOrder == "Order" ? "OrderDesc" : "Order";
+            var categories = from c in dbContext.Categories
+                             select c;
+
+            switch (sortOrder)
+            {
+                case "NameDesc":
+                    categories = categories.OrderByDescending(c => c.Name);
+                    break;
+                case "Order":
+                    categories = categories.OrderBy(c => c.DisplayOrder);
+                    break;
+                case "OrderDesc":
+                    categories = categories.OrderByDescending(c => c.DisplayOrder);
+                    break;
+                default:
+                    categories = categories.OrderBy(c => c.Name);
+                    break;
+            }
+
+            return View(await categories.AsNoTracking().ToListAsync());
         }
 
         // GET - CREATE
