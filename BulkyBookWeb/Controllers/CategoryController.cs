@@ -37,6 +37,7 @@ namespace BulkyBookWeb.Controllers
             {
                 dbContext.Categories.Add(objectCategory);
                 dbContext.SaveChanges();
+                TempData["success"] = "Category created successfully";
                 return RedirectToAction("Index");
             }
             return View(objectCategory);
@@ -70,6 +71,7 @@ namespace BulkyBookWeb.Controllers
             {
                 dbContext.Categories.Update(objectCategory);
                 dbContext.SaveChanges();
+                TempData["success"] = "Category updated successfully";
                 return RedirectToAction("Index");
             }
             return View(objectCategory);
@@ -103,6 +105,7 @@ namespace BulkyBookWeb.Controllers
 
             dbContext.Categories.Remove(categoryFromDb);
             dbContext.SaveChanges();
+            TempData["success"] = "Category deleted successfully";
             return RedirectToAction("Index");
         }
     }
