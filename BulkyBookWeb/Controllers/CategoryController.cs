@@ -21,13 +21,16 @@ namespace BulkyBookWeb.Controllers
 
         public async Task<IActionResult> Index(string sortOrder)
         {
-            ViewData["NameSortParm"] = String.IsNullOrEmpty(sortOrder) ? "NameDesc" : "";
+            ViewData["NameSortParm"] = sortOrder == "Name" ? "NameDesc" : "Name";
             ViewData["OrderSortParm"] = sortOrder == "Order" ? "OrderDesc" : "Order";
             var categories = from c in dbContext.Categories
                              select c;
 
             switch (sortOrder)
             {
+                case "Name":
+                    categories = categories.OrderBy(c => c.Name);
+                    break;
                 case "NameDesc":
                     categories = categories.OrderByDescending(c => c.Name);
                     break;
@@ -38,7 +41,7 @@ namespace BulkyBookWeb.Controllers
                     categories = categories.OrderByDescending(c => c.DisplayOrder);
                     break;
                 default:
-                    categories = categories.OrderBy(c => c.Name);
+                    categories = categories.OrderBy(c => c.Id);
                     break;
             }
 
