@@ -18,17 +18,21 @@ namespace BulkyBookWeb.Controllers
             return View(objectCategoryList);
         }
 
-        // GET
+        // GET - CREATE
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST
+        // POST - CREATE
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(Category objectCategory)
         {
+            if (objectCategory.Name == objectCategory.DisplayOrder.ToString())
+            {
+                ModelState.AddModelError("name", "The DisplayOrder cannot exactly match the Name");
+            }
             if (ModelState.IsValid)
             {
                 dbContext.Categories.Add(objectCategory);
@@ -36,6 +40,70 @@ namespace BulkyBookWeb.Controllers
                 return RedirectToAction("Index");
             }
             return View(objectCategory);
+        }
+
+        // GET - EDIT
+        public IActionResult Edit(int? id)
+        {
+            if (id is null || id == 0)
+            {
+                return NotFound();
+            }
+            var categoryFromDb = dbContext.Categories.Find(id);
+            if (categoryFromDb == null)
+            {
+                return NotFound();
+            }
+            return View(categoryFromDb);
+        }
+
+        // POST - EDIT
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Edit(Category objectCategory)
+        {
+            if (objectCategory.Name == objectCategory.DisplayOrder.ToString())
+            {
+                ModelState.AddModelError("name", "The DisplayOrder cannot exactly match the Name");
+            }
+            if (ModelState.IsValid)
+            {
+                dbContext.Categories.Update(objectCategory);
+                dbContext.SaveChanges();
+                return RedirectToAction("Index");
+            }
+            return View(objectCategory);
+        }
+
+        // GET - DELETE
+        public IActionResult Delete(int? id)
+        {
+            if (id is null || id == 0)
+            {
+                return NotFound();
+            }
+            var categoryFromDb = dbContext.Categories.Find(id);
+            if (categoryFromDb == null)
+            {
+                return NotFound();
+            }
+            return View(categoryFromDb);
+        }
+
+        // POST - DELET
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeletePost(int? id)
+        {
+            var categoryFromDb = dbContext.Categories.Find(id);
+            if (id is null)
+            {
+                return NotFound();
+            }
+
+            dbContext.Categories.Remove(categoryFromDb);
+            dbContext.SaveChanges();
+            return RedirectToAction("Index");
         }
     }
 }
