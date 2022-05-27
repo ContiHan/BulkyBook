@@ -19,12 +19,19 @@ namespace BulkyBookWeb.Controllers
         //    return View(objectCategoryList);
         //}
 
-        public async Task<IActionResult> Index(string sortOrder)
+        public async Task<IActionResult> Index(string sortOrder, string searchString)
         {
             ViewData["NameSortParm"] = sortOrder == "Name" ? "NameDesc" : "Name";
             ViewData["OrderSortParm"] = sortOrder == "Order" ? "OrderDesc" : "Order";
+            ViewData["CurrentFilter"] = searchString;
             var categories = from c in dbContext.Categories
                              select c;
+
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                categories = categories
+                    .Where(s => s.Name.Contains(searchString) || s.DisplayOrder.ToString().Contains(searchString));
+            }
 
             switch (sortOrder)
             {
