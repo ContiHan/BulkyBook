@@ -2,7 +2,6 @@
 using BulkyBookWeb.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics;
 
 namespace BulkyBookWeb.Controllers
 {
@@ -150,6 +149,7 @@ namespace BulkyBookWeb.Controllers
             TempData["success"] = "Category deleted successfully";
             return RedirectToAction("Index");
         }
+<<<<<<< HEAD
 
         public async Task<IActionResult> FillDb()
         {
@@ -204,5 +204,7 @@ namespace BulkyBookWeb.Controllers
             TempData["info"] = $"Recreate DB took {stopWatch.Elapsed.TotalSeconds} seconds";
             return RedirectToAction("Index");
         }
+=======
+>>>>>>> ccea06a5c583bd0ac8d0ce22d8b65faf46374762
     }
 }
