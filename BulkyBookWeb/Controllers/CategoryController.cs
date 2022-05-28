@@ -7,15 +7,15 @@ namespace BulkyBookWeb.Controllers
 {
     public class CategoryController : Controller
     {
-        private readonly ApplicationDbContext dbContext;
+        private readonly ApplicationDbContext _dbContext;
 
         public CategoryController(ApplicationDbContext dbContext)
         {
-            this.dbContext = dbContext;
+            _dbContext = dbContext;
         }
         //public IActionResult Index()
         //{
-        //    IEnumerable<Category> objectCategoryList = dbContext.Categories;
+        //    IEnumerable<Category> objectCategoryList = _dbContext.Categories;
         //    return View(objectCategoryList);
         //}
 
@@ -24,7 +24,7 @@ namespace BulkyBookWeb.Controllers
             ViewData["NameSortParm"] = sortOrder == "Name" ? "NameDesc" : "Name";
             ViewData["OrderSortParm"] = sortOrder == "Order" ? "OrderDesc" : "Order";
             ViewData["CurrentFilter"] = searchString;
-            var categories = from c in dbContext.Categories
+            var categories = from c in _dbContext.Categories
                              select c;
 
             if (!String.IsNullOrEmpty(searchString))
@@ -72,8 +72,8 @@ namespace BulkyBookWeb.Controllers
             }
             if (ModelState.IsValid)
             {
-                dbContext.Categories.Add(objectCategory);
-                await dbContext.SaveChangesAsync();
+                _dbContext.Add(objectCategory);
+                await _dbContext.SaveChangesAsync();
                 TempData["success"] = "Category created successfully";
                 return RedirectToAction("Index");
             }
@@ -81,14 +81,14 @@ namespace BulkyBookWeb.Controllers
         }
 
         // GET - EDIT
-        public IActionResult Edit(int? id)
+        public async Task<IActionResult> Edit(int? id)
         {
-            if (id is null || id == 0)
+            if (id is null || _dbContext.Categories is null)
             {
                 return NotFound();
             }
-            var categoryFromDb = dbContext.Categories.Find(id);
-            if (categoryFromDb == null)
+            var categoryFromDb = await _dbContext.Categories.FindAsync(id);
+            if (categoryFromDb is null)
             {
                 return NotFound();
             }
@@ -106,8 +106,8 @@ namespace BulkyBookWeb.Controllers
             }
             if (ModelState.IsValid)
             {
-                dbContext.Categories.Update(objectCategory);
-                await dbContext.SaveChangesAsync();
+                _dbContext.Update(objectCategory);
+                await _dbContext.SaveChangesAsync();
                 TempData["success"] = "Category updated successfully";
                 return RedirectToAction("Index");
             }
@@ -117,11 +117,11 @@ namespace BulkyBookWeb.Controllers
         // GET - DELETE
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id is null || id == 0)
+            if (id is null || _dbContext.Categories is null)
             {
                 return NotFound();
             }
-            var categoryFromDb = await dbContext.Categories.FindAsync(id);
+            var categoryFromDb = await _dbContext.Categories.FindAsync(id);
             if (categoryFromDb == null)
             {
                 return NotFound();
@@ -129,19 +129,23 @@ namespace BulkyBookWeb.Controllers
             return View(categoryFromDb);
         }
 
-        // POST - DELET
+        // POST - DELETE
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeletePost(int? id)
+        public async Task<IActionResult> DeletePost(int id)
         {
-            var categoryFromDb = await dbContext.Categories.FindAsync(id);
-            if (id is null)
+            if (_dbContext.Categories == null)
+            {
+                return Problem("Entity set 'ApplicationDbContext.Categories'  is null.");
+            }
+            var categoryFromDb = await _dbContext.Categories.FindAsync(id);
+            if (categoryFromDb is null)
             {
                 return NotFound();
             }
 
-            dbContext.Categories.Remove(categoryFromDb);
-            await dbContext.SaveChangesAsync();
+            _dbContext.Categories.Remove(categoryFromDb);
+            await _dbContext.SaveChangesAsync();
             TempData["success"] = "Category deleted successfully";
             return RedirectToAction("Index");
         }
