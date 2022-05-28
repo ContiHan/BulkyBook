@@ -53,7 +53,7 @@ namespace BulkyBookWeb.Controllers
                     break;
             }
 
-            return View(await categories.AsNoTracking().ToListAsync());
+            return View(await categories.Take(10).AsNoTracking().ToListAsync());
         }
 
         // GET - CREATE
@@ -158,7 +158,7 @@ namespace BulkyBookWeb.Controllers
             var categories = new List<Category>();
             if (categories.Count == 0)
             {
-                for (int i = 0; i < 200; i++)
+                for (int i = 0; i < 1_000; i++)
                 {
                     var category = new Category
                     {
@@ -173,7 +173,7 @@ namespace BulkyBookWeb.Controllers
             await _dbContext.SaveChangesAsync();
 
             stopWatch.Stop();
-            TempData["success"] = $"Fill DB took {stopWatch.Elapsed.TotalSeconds} seconds";
+            TempData["info"] = $"Fill DB took {stopWatch.Elapsed.TotalSeconds} seconds";
             return RedirectToAction("Index");
         }
 
@@ -190,7 +190,7 @@ namespace BulkyBookWeb.Controllers
             }
 
             stopWatch.Stop();
-            TempData["success"] = $"Wipe DB took {stopWatch.Elapsed.TotalSeconds} seconds";
+            TempData["info"] = $"Wipe DB took {stopWatch.Elapsed.TotalSeconds} seconds";
             return RedirectToAction("Index");
         }
 
@@ -201,7 +201,7 @@ namespace BulkyBookWeb.Controllers
             await _dbContext.Database.EnsureDeletedAsync();
             await _dbContext.Database.EnsureCreatedAsync();
             stopWatch.Stop();
-            TempData["success"] = $"Recreate DB took {stopWatch.Elapsed.TotalSeconds} seconds";
+            TempData["info"] = $"Recreate DB took {stopWatch.Elapsed.TotalSeconds} seconds";
             return RedirectToAction("Index");
         }
     }
