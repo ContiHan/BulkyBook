@@ -2,6 +2,7 @@
 using BulkyBookWeb.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace BulkyBookWeb.Controllers
 {
@@ -147,6 +148,60 @@ namespace BulkyBookWeb.Controllers
             _dbContext.Categories.Remove(categoryFromDb);
             await _dbContext.SaveChangesAsync();
             TempData["success"] = "Category deleted successfully";
+            return RedirectToAction("Index");
+        }
+
+        public async Task<IActionResult> FillDb()
+        {
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+            var categories = new List<Category>();
+            if (categories.Count == 0)
+            {
+                for (int i = 0; i < 200; i++)
+                {
+                    var category = new Category
+                    {
+                        Name = $"Generated {i}",
+                        DisplayOrder = 66
+                    };
+                    categories.Add(category);
+                }
+            }
+
+            await _dbContext.AddRangeAsync(categories);
+            await _dbContext.SaveChangesAsync();
+
+            stopWatch.Stop();
+            TempData["success"] = $"Fill DB took {stopWatch.Elapsed.TotalSeconds} seconds";
+            return RedirectToAction("Index");
+        }
+
+        public async Task<IActionResult> WipeDb()
+        {
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+
+            if (_dbContext.Categories is not null)
+            {
+                var categories = _dbContext.Categories.ToList();
+                _dbContext.RemoveRange(categories);
+                await _dbContext.SaveChangesAsync();
+            }
+
+            stopWatch.Stop();
+            TempData["success"] = $"Wipe DB took {stopWatch.Elapsed.TotalSeconds} seconds";
+            return RedirectToAction("Index");
+        }
+
+        public async Task<IActionResult> RecreateDb()
+        {
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+            await _dbContext.Database.EnsureDeletedAsync();
+            await _dbContext.Database.EnsureCreatedAsync();
+            stopWatch.Stop();
+            TempData["success"] = $"Recreate DB took {stopWatch.Elapsed.TotalSeconds} seconds";
             return RedirectToAction("Index");
         }
     }
