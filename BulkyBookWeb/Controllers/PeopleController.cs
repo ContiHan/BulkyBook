@@ -33,7 +33,7 @@ namespace BulkyBookWeb.Controllers
             if (!String.IsNullOrEmpty(searchString))
             {
                 people = people
-                    .Where(s => s.Jmeno.Contains(searchString) || s.Prijmeni.ToString().Contains(searchString));
+                    .Where(s => s.Jmeno.Contains(searchString) || s.Prijmeni.Contains(searchString));
             }
 
             switch (sortOrder)

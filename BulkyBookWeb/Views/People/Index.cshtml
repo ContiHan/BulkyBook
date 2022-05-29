@@ -10,6 +10,19 @@
 	<a asp-action="GetUpToDateData">Get up to date data</a>
 </p>
 
+<form asp-action="Index" method="get">
+	<div class="p-2">
+		Find: &nbsp;
+		<input type="text" style="width:150px" name="searchString" value="@ViewData["CurrentFilter"]" /> &nbsp;
+		<button type="submit" class="btn btn-primary" style="width:150px">
+			Search
+		</button>
+		<a asp-action="Index" class="btn btn-secondary" style="width:150px">
+			Back to Full List
+		</a>
+	</div>
+</form>
+
 <table class="table">
 	<thead>
 		<tr>
