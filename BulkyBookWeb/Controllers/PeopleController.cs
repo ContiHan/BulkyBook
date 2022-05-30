@@ -182,15 +182,9 @@ namespace BulkyBookWeb.Controllers
 
             var people = JsonConvert.DeserializeObject<List<Person>>(json);
 
-            if (_context.People is not null && _context.People.Any())
-            {
-                var oldRecords = _context.People.ToList();
-                _context.RemoveRange(oldRecords);
-                await _context.SaveChangesAsync();
-            }
-
             if (people is not null)
             {
+                await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE [People]");
                 await _context.AddRangeAsync(people);
                 await _context.SaveChangesAsync();
             }

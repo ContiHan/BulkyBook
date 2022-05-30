@@ -146,14 +146,14 @@ namespace BulkyBookWeb.Controllers
             return RedirectToAction("Index");
         }
 
-        public async Task<IActionResult> FillDb()
+        public async Task<IActionResult> FillTable()
         {
             var stopWatch = new Stopwatch();
             stopWatch.Start();
             var categories = new List<Category>();
             if (categories.Count == 0)
             {
-                for (int i = 0; i < 1_000; i++)
+                for (int i = 0; i < 10_000; i++)
                 {
                     var category = new Category
                     {
@@ -168,36 +168,50 @@ namespace BulkyBookWeb.Controllers
             await _dbContext.SaveChangesAsync();
 
             stopWatch.Stop();
-            TempData["info"] = $"Fill DB took {stopWatch.Elapsed.TotalSeconds} seconds";
+            TempData["info"] = $"Fill table took {stopWatch.Elapsed.TotalSeconds:N3} seconds";
             return RedirectToAction("Index");
         }
 
-        public async Task<IActionResult> WipeDb()
+        // Unefficient way how to wipe table
+        //public async Task<IActionResult> WipeTable()
+        //{
+        //    var stopWatch = new Stopwatch();
+        //    stopWatch.Start();
+
+        //    if (_dbContext.Categories is not null)
+        //    {
+        //        var categories = _dbContext.Categories.ToList();
+        //        _dbContext.RemoveRange(categories);
+        //        await _dbContext.SaveChangesAsync();
+        //    }
+
+        //    stopWatch.Stop();
+        //    TempData["info"] = $"Wipe table took {stopWatch.Elapsed.TotalSeconds:N2} seconds";
+        //    return RedirectToAction("Index");
+        //}
+
+        public async Task<IActionResult> WipeTableOptimized()
         {
             var stopWatch = new Stopwatch();
             stopWatch.Start();
 
-            if (_dbContext.Categories is not null)
-            {
-                var categories = _dbContext.Categories.ToList();
-                _dbContext.RemoveRange(categories);
-                await _dbContext.SaveChangesAsync();
-            }
+            await _dbContext.Database.ExecuteSqlRawAsync("TRUNCATE TABLE [Categories]");
 
             stopWatch.Stop();
-            TempData["info"] = $"Wipe DB took {stopWatch.Elapsed.TotalSeconds} seconds";
+            TempData["info"] = $"Wipe table q? took {stopWatch.Elapsed.TotalSeconds:N3} seconds";
             return RedirectToAction("Index");
         }
 
-        public async Task<IActionResult> RecreateDb()
-        {
-            var stopWatch = new Stopwatch();
-            stopWatch.Start();
-            await _dbContext.Database.EnsureDeletedAsync();
-            await _dbContext.Database.EnsureCreatedAsync();
-            stopWatch.Stop();
-            TempData["info"] = $"Recreate DB took {stopWatch.Elapsed.TotalSeconds} seconds";
-            return RedirectToAction("Index");
-        }
+        // Only fool will use it :D this method will remove the whole DB with all tables and recreate db with tables, but the migration history table not
+        //public async Task<IActionResult> RecreateDb()
+        //{
+        //    var stopWatch = new Stopwatch();
+        //    stopWatch.Start();
+        //    await _dbContext.Database.EnsureDeletedAsync();
+        //    await _dbContext.Database.EnsureCreatedAsync();
+        //    stopWatch.Stop();
+        //    TempData["info"] = $"Recreate DB took {stopWatch.Elapsed.TotalSeconds} seconds";
+        //    return RedirectToAction("Index");
+        //}
     }
 }
