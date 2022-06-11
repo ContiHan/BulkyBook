@@ -1,10 +1,10 @@
-﻿using BulkyBookWeb.Data;
-using BulkyBookWeb.Models;
+﻿using BulkyBook.Data;
+using BulkyBook.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 
-namespace BulkyBookWeb.Controllers
+namespace BulkyBook.Controllers
 {
     public class CategoryController : Controller
     {
@@ -26,7 +26,7 @@ namespace BulkyBookWeb.Controllers
             if (!String.IsNullOrEmpty(searchString))
             {
                 categories = categories
-                    .Where(s => s.Name.Contains(searchString) || s.DisplayOrder.ToString().Contains(searchString));
+                    .Where(s => s.Name != null && s.Name.Contains(searchString) || s.DisplayOrder.ToString().Contains(searchString));
             }
 
             switch (sortOrder)
@@ -83,7 +83,7 @@ namespace BulkyBookWeb.Controllers
             {
                 return NotFound();
             }
-            var categoryFromDb = await _dbContext.Categories.FindAsync(id);
+            var categoryFromDb = await _dbContext.Categories.FirstOrDefaultAsync(c => c.Id == id);
             if (categoryFromDb is null)
             {
                 return NotFound();

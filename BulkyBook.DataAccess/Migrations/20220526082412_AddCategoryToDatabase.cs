@@ -1,9 +1,8 @@
-﻿using System;
+﻿#nullable disable
+
 using Microsoft.EntityFrameworkCore.Migrations;
 
-#nullable disable
-
-namespace BulkyBookWeb.Migrations
+namespace BulkyBook.Migrations
 {
     public partial class AddCategoryToDatabase : Migration
     {
