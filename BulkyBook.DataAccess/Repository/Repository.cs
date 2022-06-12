@@ -30,7 +30,14 @@ namespace BulkyBook.DataAccess.Repository
         {
             IQueryable<T> query = dbSet;
             query = query.Where(filter);
-            return query.FirstOrDefault();
+            var result = query.FirstOrDefault();
+
+            if (result is null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
+            return result;
         }
 
         public IEnumerable<T> GetAll()

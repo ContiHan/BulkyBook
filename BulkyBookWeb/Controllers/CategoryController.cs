@@ -1,4 +1,5 @@
 ﻿using BulkyBook.Data;
+using BulkyBook.DataAccess.Repository.IRepository;
 using BulkyBook.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -8,20 +9,19 @@ namespace BulkyBook.Controllers
 {
     public class CategoryController : Controller
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly ICategoryRepository _db;
 
-        public CategoryController(ApplicationDbContext dbContext)
+        public CategoryController(ICategoryRepository db)
         {
-            _dbContext = dbContext;
+            _db = db;
         }
 
-        public async Task<IActionResult> Index(string sortOrder, string searchString)
+        public IActionResult Index(string sortOrder, string searchString)
         {
             ViewData["NameSortParm"] = sortOrder == "Name" ? "NameDesc" : "Name";
             ViewData["OrderSortParm"] = sortOrder == "Order" ? "OrderDesc" : "Order";
             ViewData["CurrentFilter"] = searchString;
-            var categories = from c in _dbContext.Categories
-                             select c;
+            var categories = _db.GetAll();
 
             if (!String.IsNullOrEmpty(searchString))
             {
@@ -48,7 +48,7 @@ namespace BulkyBook.Controllers
                     break;
             }
 
-            return View(await categories.Take(10).AsNoTracking().ToListAsync());
+            return View(categories.Take(10).ToList());
         }
 
         // GET - CREATE
@@ -60,7 +60,7 @@ namespace BulkyBook.Controllers
         // POST - CREATE
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Category objectCategory)
+        public IActionResult Create(Category objectCategory)
         {
             if (objectCategory.Name == objectCategory.DisplayOrder.ToString())
             {
@@ -68,8 +68,8 @@ namespace BulkyBook.Controllers
             }
             if (ModelState.IsValid)
             {
-                _dbContext.Add(objectCategory);
-                await _dbContext.SaveChangesAsync();
+                _db.Add(objectCategory);
+                _db.Save();
                 TempData["success"] = "Category created successfully";
                 return RedirectToAction("Index");
             }
@@ -77,13 +77,13 @@ namespace BulkyBook.Controllers
         }
 
         // GET - EDIT
-        public async Task<IActionResult> Edit(int? id)
+        public IActionResult Edit(int? id)
         {
-            if (id is null || _dbContext.Categories is null)
+            if (id is null || _db is null)
             {
                 return NotFound();
             }
-            var categoryFromDb = await _dbContext.Categories.FirstOrDefaultAsync(c => c.Id == id);
+            var categoryFromDb = _db.FirstOrDefault(c => c.Id == id);
             if (categoryFromDb is null)
             {
                 return NotFound();
@@ -94,7 +94,7 @@ namespace BulkyBook.Controllers
         // POST - EDIT
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Category objectCategory)
+        public IActionResult Edit(Category objectCategory)
         {
             if (objectCategory.Name == objectCategory.DisplayOrder.ToString())
             {
@@ -102,8 +102,8 @@ namespace BulkyBook.Controllers
             }
             if (ModelState.IsValid)
             {
-                _dbContext.Update(objectCategory);
-                await _dbContext.SaveChangesAsync();
+                _db.Update(objectCategory);
+                _db.Save();
                 TempData["success"] = "Category updated successfully";
                 return RedirectToAction("Index");
             }
@@ -111,13 +111,13 @@ namespace BulkyBook.Controllers
         }
 
         // GET - DELETE
-        public async Task<IActionResult> Delete(int? id)
+        public IActionResult Delete(int? id)
         {
-            if (id is null || _dbContext.Categories is null)
+            if (id is null || _db is null)
             {
                 return NotFound();
             }
-            var categoryFromDb = await _dbContext.Categories.FindAsync(id);
+            var categoryFromDb = _db.FirstOrDefault(c => c.Id == id);
             if (categoryFromDb == null)
             {
                 return NotFound();
@@ -128,49 +128,49 @@ namespace BulkyBook.Controllers
         // POST - DELETE
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeletePost(int id)
+        public IActionResult DeletePost(int id)
         {
-            if (_dbContext.Categories == null)
+            if (_db == null)
             {
                 return Problem("Entity set 'ApplicationDbContext.Categories'  is null.");
             }
-            var categoryFromDb = await _dbContext.Categories.FindAsync(id);
+            var categoryFromDb = _db.FirstOrDefault(c => c.Id == id);
             if (categoryFromDb is null)
             {
                 return NotFound();
             }
 
-            _dbContext.Categories.Remove(categoryFromDb);
-            await _dbContext.SaveChangesAsync();
+            _db.Remove(categoryFromDb);
+            _db.Save();
             TempData["success"] = "Category deleted successfully";
             return RedirectToAction("Index");
         }
 
-        public async Task<IActionResult> FillTable()
-        {
-            var stopWatch = new Stopwatch();
-            stopWatch.Start();
-            var categories = new List<Category>();
-            if (categories.Count == 0)
-            {
-                for (int i = 0; i < 10_000; i++)
-                {
-                    var category = new Category
-                    {
-                        Name = $"Generated {i}",
-                        DisplayOrder = 66
-                    };
-                    categories.Add(category);
-                }
-            }
+        //public IActionResult FillTable()
+        //{
+        //    var stopWatch = new Stopwatch();
+        //    stopWatch.Start();
+        //    var categories = new List<Category>();
+        //    if (categories.Count == 0)
+        //    {
+        //        for (int i = 0; i < 10_000; i++)
+        //        {
+        //            var category = new Category
+        //            {
+        //                Name = $"Generated {i}",
+        //                DisplayOrder = 66
+        //            };
+        //            categories.Add(category);
+        //        }
+        //    }
 
-            await _dbContext.AddRangeAsync(categories);
-            await _dbContext.SaveChangesAsync();
+        //    _db.Add(categories);
+        //    _db.Save();
 
-            stopWatch.Stop();
-            TempData["info"] = $"Fill table took {stopWatch.Elapsed.TotalSeconds:N3} seconds";
-            return RedirectToAction("Index");
-        }
+        //    stopWatch.Stop();
+        //    TempData["info"] = $"Fill table took {stopWatch.Elapsed.TotalSeconds:N3} seconds";
+        //    return RedirectToAction("Index");
+        //}
 
         // Unefficient way how to wipe table
         //public async Task<IActionResult> WipeTable()
@@ -190,17 +190,17 @@ namespace BulkyBook.Controllers
         //    return RedirectToAction("Index");
         //}
 
-        public async Task<IActionResult> WipeTableOptimized()
-        {
-            var stopWatch = new Stopwatch();
-            stopWatch.Start();
+        //public IActionResult WipeTableOptimized()
+        //{
+        //    var stopWatch = new Stopwatch();
+        //    stopWatch.Start();
 
-            await _dbContext.Database.ExecuteSqlRawAsync("TRUNCATE TABLE [Categories]");
+        //    _db.Database.ExecuteSqlRawAsync("TRUNCATE TABLE [Categories]");
 
-            stopWatch.Stop();
-            TempData["info"] = $"Wipe table q? took {stopWatch.Elapsed.TotalSeconds:N3} seconds";
-            return RedirectToAction("Index");
-        }
+        //    stopWatch.Stop();
+        //    TempData["info"] = $"Wipe table q? took {stopWatch.Elapsed.TotalSeconds:N3} seconds";
+        //    return RedirectToAction("Index");
+        //}
 
         // Only fool will use it :D this method will remove the whole DB with all tables and recreate db with tables, but the migration history table not
         //public async Task<IActionResult> RecreateDb()
