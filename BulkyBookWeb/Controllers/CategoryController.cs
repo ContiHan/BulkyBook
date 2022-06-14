@@ -9,11 +9,11 @@ namespace BulkyBook.Controllers
 {
     public class CategoryController : Controller
     {
-        private readonly ICategoryRepository _db;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public CategoryController(ICategoryRepository db)
+        public CategoryController(IUnitOfWork unitOfWork)
         {
-            _db = db;
+            _unitOfWork = unitOfWork;
         }
 
         public IActionResult Index(string sortOrder, string searchString)
@@ -21,12 +21,12 @@ namespace BulkyBook.Controllers
             ViewData["NameSortParm"] = sortOrder == "Name" ? "NameDesc" : "Name";
             ViewData["OrderSortParm"] = sortOrder == "Order" ? "OrderDesc" : "Order";
             ViewData["CurrentFilter"] = searchString;
-            var categories = _db.GetAll();
+            var categories = _unitOfWork.Category.GetAll();
 
             if (!String.IsNullOrEmpty(searchString))
             {
                 categories = categories
-                    .Where(s => s.Name != null && s.Name.Contains(searchString) || s.DisplayOrder.ToString().Contains(searchString));
+                    .Where(s => s.Name != null && s.Name.ToLower().Contains(searchString.ToLower()) || s.DisplayOrder.ToString().ToLower().Contains(searchString.ToLower()));
             }
 
             switch (sortOrder)
@@ -68,8 +68,8 @@ namespace BulkyBook.Controllers
             }
             if (ModelState.IsValid)
             {
-                _db.Add(objectCategory);
-                _db.Save();
+                _unitOfWork.Category.Add(objectCategory);
+                _unitOfWork.Save();
                 TempData["success"] = "Category created successfully";
                 return RedirectToAction("Index");
             }
@@ -79,11 +79,11 @@ namespace BulkyBook.Controllers
         // GET - EDIT
         public IActionResult Edit(int? id)
         {
-            if (id is null || _db is null)
+            if (id is null || _unitOfWork.Category is null)
             {
                 return NotFound();
             }
-            var categoryFromDb = _db.FirstOrDefault(c => c.Id == id);
+            var categoryFromDb = _unitOfWork.Category.FirstOrDefault(c => c.Id == id);
             if (categoryFromDb is null)
             {
                 return NotFound();
@@ -102,8 +102,8 @@ namespace BulkyBook.Controllers
             }
             if (ModelState.IsValid)
             {
-                _db.Update(objectCategory);
-                _db.Save();
+                _unitOfWork.Category.Update(objectCategory);
+                _unitOfWork.Save();
                 TempData["success"] = "Category updated successfully";
                 return RedirectToAction("Index");
             }
@@ -113,11 +113,11 @@ namespace BulkyBook.Controllers
         // GET - DELETE
         public IActionResult Delete(int? id)
         {
-            if (id is null || _db is null)
+            if (id is null || _unitOfWork.Category is null)
             {
                 return NotFound();
             }
-            var categoryFromDb = _db.FirstOrDefault(c => c.Id == id);
+            var categoryFromDb = _unitOfWork.Category.FirstOrDefault(c => c.Id == id);
             if (categoryFromDb == null)
             {
                 return NotFound();
@@ -130,19 +130,56 @@ namespace BulkyBook.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeletePost(int id)
         {
-            if (_db == null)
+            if (_unitOfWork.Category == null)
             {
                 return Problem("Entity set 'ApplicationDbContext.Categories'  is null.");
             }
-            var categoryFromDb = _db.FirstOrDefault(c => c.Id == id);
+            var categoryFromDb = _unitOfWork.Category.FirstOrDefault(c => c.Id == id);
             if (categoryFromDb is null)
             {
                 return NotFound();
             }
 
-            _db.Remove(categoryFromDb);
-            _db.Save();
+            _unitOfWork.Category.Remove(categoryFromDb);
+            _unitOfWork.Save();
             TempData["success"] = "Category deleted successfully";
+            return RedirectToAction("Index");
+        }
+
+        public IActionResult FillTable()
+        {
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+            if (!_unitOfWork.Category.GetAll().Any())
+            {
+                _unitOfWork.Category.Add(new Category { Name = "Science Fiction", DisplayOrder = 1 });
+                _unitOfWork.Category.Add(new Category { Name = "Horror", DisplayOrder = 2 });
+                _unitOfWork.Category.Add(new Category { Name = "Detective", DisplayOrder = 3 });
+                _unitOfWork.Category.Add(new Category { Name = "Romance", DisplayOrder = 4 });
+                _unitOfWork.Category.Add(new Category { Name = "Mystery", DisplayOrder = 5 });
+                _unitOfWork.Category.Add(new Category { Name = "Hobby", DisplayOrder = 6 });
+                _unitOfWork.Category.Add(new Category { Name = "Fantasy", DisplayOrder = 7 });
+                _unitOfWork.Category.Add(new Category { Name = "Animals", DisplayOrder = 8 });
+                _unitOfWork.Category.Add(new Category { Name = "Family", DisplayOrder = 9 });
+                _unitOfWork.Category.Add(new Category { Name = "Story", DisplayOrder = 10 });
+                _unitOfWork.Category.Add(new Category { Name = "Kids", DisplayOrder = 11 });
+                _unitOfWork.Save();
+            }
+
+            stopWatch.Stop();
+            TempData["info"] = $"Fill table took {stopWatch.Elapsed.TotalSeconds:N3} seconds";
+            return RedirectToAction("Index");
+        }
+
+        public IActionResult Wipe()
+        {
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+
+            _unitOfWork.Category.Wipe();
+
+            stopWatch.Stop();
+            TempData["info"] = $"Wipe table took {stopWatch.Elapsed.TotalSeconds:N3} seconds";
             return RedirectToAction("Index");
         }
 
@@ -190,17 +227,6 @@ namespace BulkyBook.Controllers
         //    return RedirectToAction("Index");
         //}
 
-        //public IActionResult WipeTableOptimized()
-        //{
-        //    var stopWatch = new Stopwatch();
-        //    stopWatch.Start();
-
-        //    _db.Database.ExecuteSqlRawAsync("TRUNCATE TABLE [Categories]");
-
-        //    stopWatch.Stop();
-        //    TempData["info"] = $"Wipe table q? took {stopWatch.Elapsed.TotalSeconds:N3} seconds";
-        //    return RedirectToAction("Index");
-        //}
 
         // Only fool will use it :D this method will remove the whole DB with all tables and recreate db with tables, but the migration history table not
         //public async Task<IActionResult> RecreateDb()

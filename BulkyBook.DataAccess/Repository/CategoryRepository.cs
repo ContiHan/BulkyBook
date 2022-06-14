@@ -1,6 +1,7 @@
 ﻿using BulkyBook.Data;
 using BulkyBook.DataAccess.Repository.IRepository;
 using BulkyBook.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace BulkyBook.DataAccess.Repository
 {
@@ -11,11 +12,6 @@ namespace BulkyBook.DataAccess.Repository
         public CategoryRepository(ApplicationDbContext db) : base(db)
         {
             _db = db;
-        }
-
-        public void Save()
-        {
-            _db.SaveChanges();
         }
 
         public void Update(Category category)
@@ -31,6 +27,11 @@ namespace BulkyBook.DataAccess.Repository
             }
 
             _db.Categories.Update(category);
+        }
+
+        public void Wipe()
+        {
+            _db.Database.ExecuteSqlRawAsync("TRUNCATE TABLE [Categories]");
         }
     }
 }
