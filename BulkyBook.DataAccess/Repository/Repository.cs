@@ -40,6 +40,20 @@ namespace BulkyBook.DataAccess.Repository
             return result;
         }
 
+        public async Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> filter)
+        {
+            IQueryable<T> query = dbSet;
+            query = query.Where(filter);
+            var result = await query.FirstOrDefaultAsync();
+
+            if (result is null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
+            return result;
+        }
+
         public IEnumerable<T> GetAll()
         {
             IQueryable<T> query = dbSet;

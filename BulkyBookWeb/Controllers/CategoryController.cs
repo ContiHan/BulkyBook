@@ -77,13 +77,13 @@ namespace BulkyBook.Controllers
         }
 
         // GET - EDIT
-        public IActionResult Edit(int? id)
+        public async Task<IActionResult> Edit(int? id)
         {
             if (id is null || _unitOfWork.Category is null)
             {
                 return NotFound();
             }
-            var categoryFromDb = _unitOfWork.Category.FirstOrDefault(c => c.Id == id);
+            var categoryFromDb = await _unitOfWork.Category.FirstOrDefaultAsync(c => c.Id == id);
             if (categoryFromDb is null)
             {
                 return NotFound();
@@ -111,13 +111,13 @@ namespace BulkyBook.Controllers
         }
 
         // GET - DELETE
-        public IActionResult Delete(int? id)
+        public async Task<IActionResult> Delete(int? id)
         {
             if (id is null || _unitOfWork.Category is null)
             {
                 return NotFound();
             }
-            var categoryFromDb = _unitOfWork.Category.FirstOrDefault(c => c.Id == id);
+            var categoryFromDb = await _unitOfWork.Category.FirstOrDefaultAsync(c => c.Id == id);
             if (categoryFromDb == null)
             {
                 return NotFound();
@@ -128,13 +128,13 @@ namespace BulkyBook.Controllers
         // POST - DELETE
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public IActionResult DeletePost(int id)
+        public async Task<IActionResult> DeletePost(int id)
         {
             if (_unitOfWork.Category == null)
             {
                 return Problem("Entity set 'ApplicationDbContext.Categories'  is null.");
             }
-            var categoryFromDb = _unitOfWork.Category.FirstOrDefault(c => c.Id == id);
+            var categoryFromDb = await _unitOfWork.Category.FirstOrDefaultAsync(c => c.Id == id);
             if (categoryFromDb is null)
             {
                 return NotFound();
