@@ -1,10 +1,11 @@
-﻿#nullable disable
-
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace BulkyBook.Migrations
+#nullable disable
+
+namespace BulkyBook.DataAccess.Migrations
 {
-    public partial class AddCategoryToDatabase : Migration
+    public partial class Category : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

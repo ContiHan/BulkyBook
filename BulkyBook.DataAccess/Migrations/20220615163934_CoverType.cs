@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace BulkyBook.Migrations
+namespace BulkyBook.DataAccess.Migrations
 {
     public partial class CoverType : Migration
     {
@@ -14,7 +14,7 @@ namespace BulkyBook.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
                 {
