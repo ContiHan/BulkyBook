@@ -31,7 +31,12 @@ namespace BulkyBook.DataAccess.Repository
 
         public void Wipe()
         {
-            _db.Database.ExecuteSqlRawAsync("TRUNCATE TABLE [Categories]");
+            _db.Database.ExecuteSqlRaw("TRUNCATE TABLE [Categories]");
+        }
+
+        public async Task WipeAsync()
+        {
+           await _db.Database.ExecuteSqlRawAsync("TRUNCATE TABLE [Categories]");
         }
     }
 }

@@ -20,11 +20,12 @@ namespace BulkyBook.DataAccess.Repository
             _db = db;
             dbSet = _db.Set<T>();
         }
-
-        public void Add(T entity)
+        public IEnumerable<T> GetAll()
         {
-            dbSet.Add(entity);
+            IQueryable<T> query = dbSet;
+            return query;
         }
+
 
         public T FirstOrDefault(Expression<Func<T, bool>> filter)
         {
@@ -54,10 +55,22 @@ namespace BulkyBook.DataAccess.Repository
             return result;
         }
 
-        public IEnumerable<T> GetAll()
+        public void Add(T entity)
         {
-            IQueryable<T> query = dbSet;
-            return query;
+            dbSet.Add(entity);
+        }
+        public async Task AddAsync(T entity)
+        {
+            await dbSet.AddAsync(entity);
+        }
+        public void AddRange(IEnumerable<T> entities)
+        {
+            dbSet.AddRange(entities);
+        }
+
+        public async Task AddRangeAsync(IEnumerable<T> entities)
+        {
+            await dbSet.AddRangeAsync(entities);
         }
 
         public void Remove(T entity)

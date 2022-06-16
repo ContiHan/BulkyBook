@@ -60,7 +60,7 @@ namespace BulkyBook.Controllers
         // POST - CREATE
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Category objectCategory)
+        public async Task<IActionResult> Create(Category objectCategory)
         {
             if (objectCategory.Name == objectCategory.DisplayOrder.ToString())
             {
@@ -68,8 +68,8 @@ namespace BulkyBook.Controllers
             }
             if (ModelState.IsValid)
             {
-                _unitOfWork.Category.Add(objectCategory);
-                _unitOfWork.Save();
+                await _unitOfWork.Category.AddAsync(objectCategory);
+                await _unitOfWork.SaveAsync();
                 TempData["success"] = "Category created successfully";
                 return RedirectToAction("Index");
             }
@@ -94,7 +94,7 @@ namespace BulkyBook.Controllers
         // POST - EDIT
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(Category objectCategory)
+        public async Task<IActionResult> Edit(Category objectCategory)
         {
             if (objectCategory.Name == objectCategory.DisplayOrder.ToString())
             {
@@ -103,7 +103,7 @@ namespace BulkyBook.Controllers
             if (ModelState.IsValid)
             {
                 _unitOfWork.Category.Update(objectCategory);
-                _unitOfWork.Save();
+                await _unitOfWork.SaveAsync();
                 TempData["success"] = "Category updated successfully";
                 return RedirectToAction("Index");
             }
@@ -141,29 +141,37 @@ namespace BulkyBook.Controllers
             }
 
             _unitOfWork.Category.Remove(categoryFromDb);
-            _unitOfWork.Save();
+            await _unitOfWork.SaveAsync();
             TempData["success"] = "Category deleted successfully";
             return RedirectToAction("Index");
         }
 
-        public IActionResult FillTable()
+        public async Task<IActionResult> FillTable()
         {
             var stopWatch = new Stopwatch();
             stopWatch.Start();
             if (!_unitOfWork.Category.GetAll().Any())
             {
-                _unitOfWork.Category.Add(new Category { Name = "Science Fiction", DisplayOrder = 1 });
-                _unitOfWork.Category.Add(new Category { Name = "Horror", DisplayOrder = 2 });
-                _unitOfWork.Category.Add(new Category { Name = "Detective", DisplayOrder = 3 });
-                _unitOfWork.Category.Add(new Category { Name = "Romance", DisplayOrder = 4 });
-                _unitOfWork.Category.Add(new Category { Name = "Mystery", DisplayOrder = 5 });
-                _unitOfWork.Category.Add(new Category { Name = "Hobby", DisplayOrder = 6 });
-                _unitOfWork.Category.Add(new Category { Name = "Fantasy", DisplayOrder = 7 });
-                _unitOfWork.Category.Add(new Category { Name = "Animals", DisplayOrder = 8 });
-                _unitOfWork.Category.Add(new Category { Name = "Family", DisplayOrder = 9 });
-                _unitOfWork.Category.Add(new Category { Name = "Story", DisplayOrder = 10 });
-                _unitOfWork.Category.Add(new Category { Name = "Kids", DisplayOrder = 11 });
-                _unitOfWork.Save();
+                await _unitOfWork.Category.AddAsync(new Category { Name = "Science Fiction", DisplayOrder = 1 });
+                await _unitOfWork.Category.AddAsync(new Category { Name = "Horror", DisplayOrder = 2 });
+                await _unitOfWork.Category.AddAsync(new Category { Name = "Detective", DisplayOrder = 3 });
+                await _unitOfWork.Category.AddAsync(new Category { Name = "Romance", DisplayOrder = 4 });
+                await _unitOfWork.Category.AddAsync(new Category { Name = "Mystery", DisplayOrder = 5 });
+                await _unitOfWork.Category.AddAsync(new Category { Name = "Hobby", DisplayOrder = 6 });
+                await _unitOfWork.Category.AddAsync(new Category { Name = "Fantasy", DisplayOrder = 7 });
+                await _unitOfWork.Category.AddAsync(new Category { Name = "Animals", DisplayOrder = 8 });
+                await _unitOfWork.Category.AddAsync(new Category { Name = "Family", DisplayOrder = 9 });
+                await _unitOfWork.Category.AddAsync(new Category { Name = "Story", DisplayOrder = 10 });
+                await _unitOfWork.Category.AddAsync(new Category { Name = "Kids", DisplayOrder = 11 });
+
+                var generatedCategories = new List<Category>();
+                for (int i = 0; i < 1_000; i++)
+                {
+                    generatedCategories.Add(new Category { Name = $"Generated {i}", DisplayOrder = 66 });
+                }
+                await _unitOfWork.Category.AddRangeAsync(generatedCategories);
+
+                await _unitOfWork.SaveAsync();
             }
 
             stopWatch.Stop();
@@ -171,12 +179,12 @@ namespace BulkyBook.Controllers
             return RedirectToAction("Index");
         }
 
-        public IActionResult Wipe()
+        public async Task<IActionResult> WipeAsync()
         {
             var stopWatch = new Stopwatch();
             stopWatch.Start();
 
-            _unitOfWork.Category.Wipe();
+            await _unitOfWork.Category.WipeAsync();
 
             stopWatch.Stop();
             TempData["info"] = $"Wipe table took {stopWatch.Elapsed.TotalSeconds:N3} seconds";

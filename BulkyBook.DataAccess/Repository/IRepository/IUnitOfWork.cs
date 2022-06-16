@@ -12,5 +12,7 @@ namespace BulkyBook.DataAccess.Repository.IRepository
         ICoverTypeRepository CoverType { get; }
 
         void Save();
+
+        Task SaveAsync();
     }
 }
