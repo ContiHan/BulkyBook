@@ -14,6 +14,8 @@ namespace BulkyBook.DataAccess.Repository
 
         public ICoverTypeRepository CoverType { get; private set; }
 
+        public IProductRepository Product { get; private set; }
+
         private ApplicationDbContext _db;
 
         public UnitOfWork(ApplicationDbContext db)
@@ -21,6 +23,7 @@ namespace BulkyBook.DataAccess.Repository
             _db = db;
             Category = new CategoryRepository(db);
             CoverType = new CoverTypeRepository(db);
+            Product = new ProductRepository(db);
         }
 
         public void Save()

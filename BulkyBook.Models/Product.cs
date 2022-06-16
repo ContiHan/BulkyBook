@@ -32,6 +32,7 @@ namespace BulkyBook.Models
         [Range(1, 10_000)]
         public double Price100 { get; set; }
         [Required]
+        public string? ImageUrl { get; set; }
         public int CategoryId { get; set; }
         public Category? Category { get; set; }
         [Required]
