@@ -5,8 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 
-namespace BulkyBook.Controllers
+namespace BulkyBookWeb.Areas.Admin.Controllers
 {
+    [Area("Admin")]
     public class CategoryController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -23,7 +24,7 @@ namespace BulkyBook.Controllers
             ViewData["CurrentFilter"] = searchString;
             var categories = _unitOfWork.Category.GetAll();
 
-            if (!String.IsNullOrEmpty(searchString))
+            if (!string.IsNullOrEmpty(searchString))
             {
                 categories = categories
                     .Where(s => s.Name != null && s.Name.ToLower().Contains(searchString.ToLower()) || s.DisplayOrder.ToString().ToLower().Contains(searchString.ToLower()));
@@ -48,7 +49,10 @@ namespace BulkyBook.Controllers
                     break;
             }
 
-            return View(categories.Take(10).ToList());
+            return categories != null ?
+                    View(categories.Take(50)) :
+                    Problem("Entity 'categories' is null.");
+
         }
 
         // GET - CREATE
