@@ -44,12 +44,13 @@ namespace BulkyBookWeb.Areas.Admin.Controllers
             if (id is null || _unitOfWork.Product is null)
             {
                 // create product
+                ViewBag.CategoryList = categoryList;
+                ViewData["coverTypeList"] = coverTypeList;
                 return View(product);
             }
             else
             {
                 // update product
-
             }
 
             return View(product);

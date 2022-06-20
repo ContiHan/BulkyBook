@@ -168,12 +168,12 @@ namespace BulkyBookWeb.Areas.Admin.Controllers
                 await _unitOfWork.Category.AddAsync(new Category { Name = "Story", DisplayOrder = 10 });
                 await _unitOfWork.Category.AddAsync(new Category { Name = "Kids", DisplayOrder = 11 });
 
-                var generatedCategories = new List<Category>();
-                for (int i = 0; i < 1_000; i++)
-                {
-                    generatedCategories.Add(new Category { Name = $"Generated {i}", DisplayOrder = 66 });
-                }
-                await _unitOfWork.Category.AddRangeAsync(generatedCategories);
+                //var generatedCategories = new List<Category>();
+                //for (int i = 0; i < 1_000; i++)
+                //{
+                //    generatedCategories.Add(new Category { Name = $"Generated {i}", DisplayOrder = 66 });
+                //}
+                //await _unitOfWork.Category.AddRangeAsync(generatedCategories);
 
                 await _unitOfWork.SaveAsync();
             }

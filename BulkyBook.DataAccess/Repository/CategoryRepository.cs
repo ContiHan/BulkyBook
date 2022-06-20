@@ -8,6 +8,7 @@ namespace BulkyBook.DataAccess.Repository
     public class CategoryRepository : Repository<Category>, ICategoryRepository
     {
         private ApplicationDbContext _db;
+        private readonly string wipeDbCommand = "DELETE FROM Bulky.dbo.Categories DBCC CHECKIDENT('Bulky.dbo.Categories', RESEED, 0)";
 
         public CategoryRepository(ApplicationDbContext db) : base(db)
         {
@@ -31,12 +32,16 @@ namespace BulkyBook.DataAccess.Repository
 
         public void Wipe()
         {
-            _db.Database.ExecuteSqlRaw("TRUNCATE TABLE [Categories]");
+            _db.Database.ExecuteSqlRaw(wipeDbCommand);
         }
 
         public async Task WipeAsync()
         {
-           await _db.Database.ExecuteSqlRawAsync("TRUNCATE TABLE [Categories]");
+            // slow, but working way
+            await _db.Database.ExecuteSqlRawAsync(wipeDbCommand);
+
+            // cannot use when table is referenced by a FOREIGN KEY constraint
+            //await _db.Database.ExecuteSqlRawAsync("TRUNCATE TABLE [Categories]");
         }
     }
 }
