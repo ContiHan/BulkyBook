@@ -1,5 +1,6 @@
 ﻿using BulkyBook.DataAccess.Repository.IRepository;
 using BulkyBook.Models;
+using BulkyBook.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Diagnostics;
@@ -28,47 +29,47 @@ namespace BulkyBookWeb.Areas.Admin.Controllers
         // GET - UPSERT
         public async Task<IActionResult> Upsert(int? id)
         {
-            Product product = new();
-
-            IEnumerable<SelectListItem> categoryList = _unitOfWork.Category.GetAll().Select(u => new SelectListItem
+            ProductVM productVM = new()
             {
-                Text = u.Name,
-                Value = u.Id.ToString(),
-            });
-            IEnumerable<SelectListItem> coverTypeList = _unitOfWork.CoverType.GetAll().Select(u => new SelectListItem
-            {
-                Text = u.Name,
-                Value = u.Id.ToString(),
-            });
+                Product = new(),
+                CategoryList = _unitOfWork.Category.GetAll().Select(c => new SelectListItem
+                {
+                    Text = c.Name,
+                    Value = c.Id.ToString(),
+                }),
+                CoverTypeList = _unitOfWork.CoverType.GetAll().Select(c => new SelectListItem
+                {
+                    Text = c.Name,
+                    Value = c.Id.ToString(),
+                }),
+            };
 
             if (id is null || _unitOfWork.Product is null)
             {
                 // create product
-                ViewBag.CategoryList = categoryList;
-                ViewData["coverTypeList"] = coverTypeList;
-                return View(product);
+                return View(productVM);
             }
             else
             {
                 // update product
             }
 
-            return View(product);
+            return View(productVM);
         }
 
         // POST - UPSERT
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Upsert(CoverType coverType)
+        public async Task<IActionResult> Upsert(ProductVM productVM, IFormFile file)
         {
             if (ModelState.IsValid)
             {
-                _unitOfWork.CoverType.Update(coverType);
+                //_unitOfWork.CoverType.Update(coverType);
                 await _unitOfWork.SaveAsync();
                 TempData["success"] = "Cover type updated successfully";
                 return RedirectToAction("Index");
             }
-            return View(coverType);
+            return View(productVM);
         }
 
         // GET - DELETE
