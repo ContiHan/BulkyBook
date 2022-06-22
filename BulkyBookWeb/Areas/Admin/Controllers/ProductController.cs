@@ -21,11 +21,7 @@ namespace BulkyBookWeb.Areas.Admin.Controllers
 
         public IActionResult Index()
         {
-            var coverTypes = _unitOfWork.CoverType.GetAll();
-            return coverTypes != null ?
-                    View(coverTypes) :
-                    Problem("Entity 'coverTypes' is null.");
-
+            return View();
         }
 
         // GET - UPSERT
@@ -77,7 +73,7 @@ namespace BulkyBookWeb.Areas.Admin.Controllers
                     {
                         file.CopyTo(fileStream);
                     }
-                    productVM.Product.ImageUrl = @"images\products" + fileName + extension;
+                    productVM.Product.ImageUrl = @"images\products\" + fileName + extension;
                 }
 
                 await _unitOfWork.Product.AddAsync(productVM.Product);
@@ -123,5 +119,14 @@ namespace BulkyBookWeb.Areas.Admin.Controllers
             TempData["success"] = "Category deleted successfully";
             return RedirectToAction("Index");
         }
+
+        #region API CALLS
+        [HttpGet]
+        public IActionResult GetAll()
+        {
+            var products = _unitOfWork.Product.GetAll();
+            return Json(new { data = products });
+        }
+        #endregion
     }
 }
