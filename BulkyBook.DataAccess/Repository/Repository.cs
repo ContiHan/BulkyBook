@@ -20,17 +20,19 @@ namespace BulkyBook.DataAccess.Repository
             _db = db;
             dbSet = _db.Set<T>();
         }
-        public IEnumerable<T> GetAll()
+        public IEnumerable<T> GetAll(string? includeProperties = null)
         {
             IQueryable<T> query = dbSet;
+            query = GetIncludeProperties(includeProperties, query);
             return query;
         }
 
 
-        public T FirstOrDefault(Expression<Func<T, bool>> filter)
+        public T FirstOrDefault(Expression<Func<T, bool>> filter, string? includeProperties = null)
         {
             IQueryable<T> query = dbSet;
             query = query.Where(filter);
+            query = GetIncludeProperties(includeProperties, query);
             var result = query.FirstOrDefault();
 
             if (result is null)
@@ -41,10 +43,11 @@ namespace BulkyBook.DataAccess.Repository
             return result;
         }
 
-        public async Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> filter)
+        public async Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> filter, string? includeProperties = null)
         {
             IQueryable<T> query = dbSet;
             query = query.Where(filter);
+            query = GetIncludeProperties(includeProperties, query);
             var result = await query.FirstOrDefaultAsync();
 
             if (result is null)
@@ -81,6 +84,18 @@ namespace BulkyBook.DataAccess.Repository
         public void RemoveRange(IEnumerable<T> entities)
         {
             dbSet.RemoveRange(entities);
+        }
+        private static IQueryable<T> GetIncludeProperties(string? includeProperties, IQueryable<T> query)
+        {
+            if (includeProperties is not null)
+            {
+                foreach (var item in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(item);
+                }
+            }
+
+            return query;
         }
     }
 }

@@ -9,9 +9,9 @@ namespace BulkyBook.DataAccess.Repository.IRepository
 {
     public interface IRepository<T> where T : class
     {
-        IEnumerable<T> GetAll();
-        T FirstOrDefault(Expression<Func<T, bool>> filter);
-        Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> filter);
+        IEnumerable<T> GetAll(string? includeProperties = null);
+        T FirstOrDefault(Expression<Func<T, bool>> filter, string? includeProperties = null);
+        Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> filter, string? includeProperties = null);
         void Add(T entity);
         Task AddAsync(T entity);
         void AddRange(IEnumerable<T> entities);
