@@ -33,12 +33,15 @@ namespace BulkyBook.Models
         [Range(1, 10_000)]
         public double Price100 { get; set; }
         [ValidateNever]
+        [Display(Name = "Image url")]
         public string? ImageUrl { get; set; }
         [Required]
+        [Display(Name = "Category")]
         public int CategoryId { get; set; }
         [ValidateNever]
         public Category? Category { get; set; }
         [Required]
+        [Display(Name = "Cover type")]
         public int CoverTypeId { get; set; }
         [ValidateNever]
         public CoverType? CoverType { get; set; }

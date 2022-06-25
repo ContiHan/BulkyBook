@@ -42,7 +42,7 @@ namespace BulkyBookWeb.Areas.Admin.Controllers
                 }),
             };
 
-            if (id is null || _unitOfWork.Product is null)
+            if (id is null || id == 0)
             {
                 // create product
                 return View(productVM);
@@ -50,9 +50,9 @@ namespace BulkyBookWeb.Areas.Admin.Controllers
             else
             {
                 // update product
+                productVM.Product = _unitOfWork.Product.FirstOrDefault(p => p.Id == id);
+                return View(productVM);
             }
-
-            return View(productVM);
         }
 
         // POST - UPSERT
