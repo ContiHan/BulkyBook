@@ -25,7 +25,7 @@ namespace BulkyBookWeb.Areas.Admin.Controllers
         }
 
         // GET - UPSERT
-        public async Task<IActionResult> Upsert(int? id)
+        public IActionResult Upsert(int? id)
         {
             ProductVM productVM = new()
             {
@@ -69,14 +69,31 @@ namespace BulkyBookWeb.Areas.Admin.Controllers
                     var uploads = Path.Combine(wwwRootPath, @"images\products");
                     var extension = Path.GetExtension(file.FileName);
 
+                    if (productVM.Product.ImageUrl is not null)
+                    {
+                        var oldImagePath = Path.Combine(wwwRootPath, productVM.Product.ImageUrl.TrimStart('\\'));
+                        if (System.IO.File.Exists(oldImagePath))
+                        {
+                            System.IO.File.Delete(oldImagePath);
+                        }
+                    }
+
                     using (var fileStream = new FileStream(Path.Combine(uploads, fileName + extension), FileMode.Create))
                     {
                         file.CopyTo(fileStream);
                     }
-                    productVM.Product.ImageUrl = @"images\products\" + fileName + extension;
+                    productVM.Product.ImageUrl = @"\images\products\" + fileName + extension;
                 }
 
-                await _unitOfWork.Product.AddAsync(productVM.Product);
+                if (productVM.Product.Id == 0)
+                {
+                    await _unitOfWork.Product.AddAsync(productVM.Product);
+                }
+                else
+                {
+                    _unitOfWork.Product.Update(productVM.Product);
+                }
+
                 await _unitOfWork.SaveAsync();
                 TempData["success"] = "Product created successfully";
                 return RedirectToAction("Index");

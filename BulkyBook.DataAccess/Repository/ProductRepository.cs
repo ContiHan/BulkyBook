@@ -50,8 +50,6 @@ namespace BulkyBook.DataAccess.Repository
             {
                 productFromDb.ImageUrl = product.ImageUrl;
             }
-
-            _db.Products.Update(product);
         }
     }
 }
