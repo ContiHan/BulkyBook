@@ -19,9 +19,25 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
 
         public IActionResult Index()
         {
-            IEnumerable<Product> products = _unitOfWork.Product.GetAll(includeProperties:"Category,CoverType");
+            IEnumerable<Product> products = _unitOfWork.Product.GetAll(includeProperties: "Category,CoverType");
             return View(products);
         }
+
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id is null || _unitOfWork.Product is null)
+            {
+                return NotFound();
+            }
+            ShoppingCart cart = new()
+            {
+                Count = 1,
+                Product = await _unitOfWork.Product.FirstOrDefaultAsync(p => p.Id == id, includeProperties: "Category,CoverType"),
+            };
+            return View(cart);
+        }
+
+
 
         public IActionResult Privacy()
         {

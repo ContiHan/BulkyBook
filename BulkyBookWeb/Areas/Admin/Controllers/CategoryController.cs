@@ -87,12 +87,12 @@ namespace BulkyBookWeb.Areas.Admin.Controllers
             {
                 return NotFound();
             }
-            var categoryFromDb = await _unitOfWork.Category.FirstOrDefaultAsync(c => c.Id == id);
-            if (categoryFromDb is null)
+            var category = await _unitOfWork.Category.FirstOrDefaultAsync(c => c.Id == id);
+            if (category is null)
             {
                 return NotFound();
             }
-            return View(categoryFromDb);
+            return View(category);
         }
 
         // POST - EDIT
