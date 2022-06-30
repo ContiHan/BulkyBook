@@ -34,6 +34,11 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
                 Count = 1,
                 Product = await _unitOfWork.Product.FirstOrDefaultAsync(p => p.Id == id, includeProperties: "Category,CoverType"),
             };
+
+            if (cart is null)
+            {
+                return NotFound();
+            }
             return View(cart);
         }
 
