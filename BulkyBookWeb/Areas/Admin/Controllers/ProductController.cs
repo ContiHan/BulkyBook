@@ -101,48 +101,38 @@ namespace BulkyBookWeb.Areas.Admin.Controllers
             return View(productVM);
         }
 
-        // GET - DELETE
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id is null || _unitOfWork.CoverType is null)
-            {
-                return NotFound();
-            }
-            var coverType = await _unitOfWork.CoverType.FirstOrDefaultAsync(c => c.Id == id);
-            if (coverType == null)
-            {
-                return NotFound();
-            }
-            return View(coverType);
-        }
-
-        // POST - DELETE
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeletePost(int id)
-        {
-            if (_unitOfWork.CoverType is null)
-            {
-                return Problem("Entity '_unitOfWork.CoverType' is null.");
-            }
-            var coverType = await _unitOfWork.CoverType.FirstOrDefaultAsync(c => c.Id == id);
-            if (coverType is null)
-            {
-                return NotFound();
-            }
-
-            _unitOfWork.CoverType.Remove(coverType);
-            await _unitOfWork.SaveAsync();
-            TempData["success"] = "Category deleted successfully";
-            return RedirectToAction("Index");
-        }
-
         #region API CALLS
         [HttpGet]
         public IActionResult GetAll()
         {
             var products = _unitOfWork.Product.GetAll(includeProperties: "Category,CoverType");
             return Json(new { data = products });
+        }
+
+        // POST - DELETE
+        [HttpDelete]
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (_unitOfWork.Product is null)
+            {
+                return Problem("Entity '_unitOfWork.Product' is null.");
+            }
+
+            var product = await _unitOfWork.Product.FirstOrDefaultAsync(c => c.Id == id);
+            if (product is null)
+            {
+                return Json(new { success = false, message = "Error while deleting" });
+            }
+
+            var oldImagePath = Path.Combine(_hostEnvironment.WebRootPath, product.ImageUrl.TrimStart('\\'));
+            if (System.IO.File.Exists(oldImagePath))
+            {
+                System.IO.File.Delete(oldImagePath);
+            }
+
+            _unitOfWork.Product.Remove(product);
+            await _unitOfWork.SaveAsync();
+            return Json(new { success = true, message = "Product was successfully deleted" });
         }
         #endregion
     }
