@@ -132,7 +132,7 @@ namespace BulkyBookWeb.Areas.Admin.Controllers
 
             _unitOfWork.Product.Remove(product);
             await _unitOfWork.SaveAsync();
-            return Json(new { success = true, message = "Product was successfully deleted" });
+            return Json(new { success = true, message = "Product deleted successfully" });
         }
         #endregion
     }
