@@ -17,20 +17,5 @@ namespace BulkyBook.DataAccess.Repository
         {
             _db = db;
         }
-
-        public void Update(ApplicationUser applicationUser)
-        {
-            if (applicationUser is null)
-            {
-                throw new ArgumentNullException(nameof(applicationUser));
-            }
-
-            if (_db.ApplicationUsers is null)
-            {
-                throw new ArgumentNullException(nameof(_db.ApplicationUsers));
-            }
-
-            _db.ApplicationUsers.Update(applicationUser);
-        }
     }
 }

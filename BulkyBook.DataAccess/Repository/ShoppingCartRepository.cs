@@ -12,20 +12,5 @@ namespace BulkyBook.DataAccess.Repository
         {
             _db = db;
         }
-
-        public void Update(ShoppingCart shoppingCart)
-        {
-            if (shoppingCart is null)
-            {
-                throw new ArgumentNullException(nameof(shoppingCart));
-            }
-
-            if (_db.ShoppingCarts is null)
-            {
-                throw new ArgumentNullException(nameof(_db.ShoppingCarts));
-            }
-
-            _db.ShoppingCarts.Update(shoppingCart);
-        }
     }
 }
