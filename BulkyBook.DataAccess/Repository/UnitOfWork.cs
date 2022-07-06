@@ -18,6 +18,10 @@ namespace BulkyBook.DataAccess.Repository
 
         public ICompanyRepository Company { get; private set; }
 
+        public IShoppingCartRepository ShoppingCart { get; private set; }
+
+        public IApplicationUserRepository ApplicationUser { get; private set; }
+
         private ApplicationDbContext _db;
 
         public UnitOfWork(ApplicationDbContext db)
@@ -27,6 +31,8 @@ namespace BulkyBook.DataAccess.Repository
             CoverType = new CoverTypeRepository(db);
             Product = new ProductRepository(db);
             Company = new CompanyRepository(db);
+            ShoppingCart = new ShoppingCartRepository(db);
+            ApplicationUser = new ApplicationUserRepository(db);
         }
 
         public void Save()
