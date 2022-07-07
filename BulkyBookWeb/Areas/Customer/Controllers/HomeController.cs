@@ -1,7 +1,9 @@
 ﻿using BulkyBook.DataAccess.Repository.IRepository;
 using BulkyBook.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using System.Security.Claims;
 
 namespace BulkyBookWeb.Areas.Customer.Controllers
 {
@@ -23,26 +25,40 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
             return View(products);
         }
 
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int? productId)
         {
-            if (id is null || _unitOfWork.Product is null)
+            if (productId is null || _unitOfWork.Product is null)
             {
                 return NotFound();
             }
-            ShoppingCart cart = new()
+            ShoppingCart shoppingCart = new()
             {
                 Count = 1,
-                Product = await _unitOfWork.Product.FirstOrDefaultAsync(p => p.Id == id, includeProperties: "Category,CoverType"),
+                ProductId = productId.Value,
+                Product = await _unitOfWork.Product.FirstOrDefaultAsync(p => p.Id == productId, includeProperties: "Category,CoverType"),
             };
 
-            if (cart is null)
+            if (shoppingCart is null)
             {
                 return NotFound();
             }
-            return View(cart);
+            return View(shoppingCart);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public async Task<IActionResult> Details(ShoppingCart shoppingCart)
+        {
+            var claimsIdentity = (ClaimsIdentity)User.Identity;
+            var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+            shoppingCart.ApplicationUserId = claim.Value;
 
+            await _unitOfWork.ShoppingCart.AddAsync(shoppingCart);
+            await _unitOfWork.SaveAsync();
+
+            return RedirectToAction(nameof(Index));
+        }
 
         public IActionResult Privacy()
         {
