@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace BulkyBookWeb.Areas.Admin.Controllers
 {
-    [Area("Admin")]
+    [Area(nameof(Admin))]
     public class CategoryController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;

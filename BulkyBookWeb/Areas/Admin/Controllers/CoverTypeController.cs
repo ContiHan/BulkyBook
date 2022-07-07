@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace BulkyBookWeb.Areas.Admin.Controllers
 {
-    [Area("Admin")]
+    [Area(nameof(Admin))]
     public class CoverTypeController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
