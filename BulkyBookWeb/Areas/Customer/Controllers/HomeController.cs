@@ -54,7 +54,7 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
             var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
             shoppingCart.ApplicationUserId = claim.Value;
 
-            ShoppingCart shoppingCartFromDb = _unitOfWork.ShoppingCart.FirstOrDefault(
+            ShoppingCart shoppingCartFromDb = await _unitOfWork.ShoppingCart.FirstOrDefaultAsync(
                 u => u.ApplicationUserId == claim.Value && u.ProductId == shoppingCart.ProductId
                 );
             if (shoppingCartFromDb is null)

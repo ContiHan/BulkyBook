@@ -39,11 +39,6 @@ namespace BulkyBook.DataAccess.Repository
             query = GetIncludeProperties(includeProperties, query);
             var result = query.FirstOrDefault();
 
-            if (result is null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
-
             return result;
         }
 
@@ -53,11 +48,6 @@ namespace BulkyBook.DataAccess.Repository
             query = query.Where(filter);
             query = GetIncludeProperties(includeProperties, query);
             var result = await query.FirstOrDefaultAsync();
-
-            if (result is null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
 
             return result;
         }
