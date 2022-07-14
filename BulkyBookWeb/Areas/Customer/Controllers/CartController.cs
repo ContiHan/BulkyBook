@@ -13,6 +13,8 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
     public class CartController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
+
+        [BindProperty]
         public ShoppingCartVM ShoppingCartVM { get; set; }
 
         public CartController(IUnitOfWork unitOfWork)
@@ -71,7 +73,7 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
         [HttpPost]
         [ActionName(nameof(Summary))]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SummaryPOST()
+        public IActionResult SummaryPOST()
         {
             var claim = GetUserIdentity();
             ShoppingCartVM.ListCart = _unitOfWork.ShoppingCart.GetAll(u => u.ApplicationUserId == claim.Value, includeProperties: nameof(Product));
@@ -87,24 +89,30 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
                 ShoppingCartVM.OrderHeader.OrderTotal += cart.Count * cart.PriceBasedOnQuantity;
             }
 
-            await _unitOfWork.OrderHeader.AddAsync(ShoppingCartVM.OrderHeader);
-            await _unitOfWork.SaveAsync();
+            _unitOfWork.OrderHeader.Add(ShoppingCartVM.OrderHeader);
+            _unitOfWork.Save();
 
             foreach (var cart in ShoppingCartVM.ListCart)
             {
+                var ProductId = cart.ProductId;
+                var OrderId = ShoppingCartVM.OrderHeader.Id;
+                var Price = cart.PriceBasedOnQuantity;
+                var Count = cart.Count;
+
                 OrderDetail orderDetail = new()
                 {
-                    ProductId = cart.ProductId,
-                    OrderId = ShoppingCartVM.OrderHeader.Id,
-                    Price = cart.PriceBasedOnQuantity,
-                    Count = cart.Count
+                    //Count = Count,
+                   // Price = Price,
+                   // OrderId = OrderId,
+                    //ProductId = ProductId,
                 };
-                await _unitOfWork.OrderDetail.AddAsync(orderDetail);
-                await _unitOfWork.SaveAsync();
+
+                _unitOfWork.OrderDetail.Add(orderDetail);
+                _unitOfWork.Save();
             }
 
             _unitOfWork.ShoppingCart.RemoveRange(ShoppingCartVM.ListCart);
-            await _unitOfWork.SaveAsync();
+            _unitOfWork.Save();
 
             return RedirectToAction(nameof(Index), nameof(HomeController));
         }
