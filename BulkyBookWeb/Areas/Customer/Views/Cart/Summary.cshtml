@@ -91,7 +91,7 @@
 											<h6 class="my-0">@detail.Product.Title</h6>
 											<small class="text-muted">Quantity: @detail.Count</small>
 										</div>
-										<span class="text-muted">@((detail.PriceBasedOnQuantity * detail.Count).ToString("c"))</span>
+										<span class="text-muted">@detail.TotalPriceBasedOnQuantity.ToString("c")</span>
 									</li>
 								}
 

@@ -28,5 +28,8 @@ namespace BulkyBook.Models
 
         [NotMapped]
         public double PriceBasedOnQuantity { get; set; }
+
+        [NotMapped]
+        public double TotalPriceBasedOnQuantity { get => PriceBasedOnQuantity * Count; }
     }
 }
