@@ -73,7 +73,7 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
         [HttpPost]
         [ActionName(nameof(Summary))]
         [ValidateAntiForgeryToken]
-        public IActionResult SummaryPOST()
+        public async Task<IActionResult> SummaryPOST()
         {
             var claim = GetUserIdentity();
             ShoppingCartVM.ListCart = _unitOfWork.ShoppingCart.GetAll(u => u.ApplicationUserId == claim.Value, includeProperties: nameof(Product));
@@ -89,32 +89,26 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
                 ShoppingCartVM.OrderHeader.OrderTotal += cart.Count * cart.PriceBasedOnQuantity;
             }
 
-            _unitOfWork.OrderHeader.Add(ShoppingCartVM.OrderHeader);
-            _unitOfWork.Save();
+            await _unitOfWork.OrderHeader.AddAsync(ShoppingCartVM.OrderHeader);
+            await _unitOfWork.SaveAsync();
 
             foreach (var cart in ShoppingCartVM.ListCart)
             {
-                var ProductId = cart.ProductId;
-                var OrderId = ShoppingCartVM.OrderHeader.Id;
-                var Price = cart.PriceBasedOnQuantity;
-                var Count = cart.Count;
-
                 OrderDetail orderDetail = new()
                 {
-                    //Count = Count,
-                   // Price = Price,
-                   // OrderId = OrderId,
-                    //ProductId = ProductId,
+                    ProductId = cart.ProductId,
+                    OrderId = ShoppingCartVM.OrderHeader.Id,
+                    Price = cart.PriceBasedOnQuantity,
+                    Count = cart.Count
                 };
-
-                _unitOfWork.OrderDetail.Add(orderDetail);
-                _unitOfWork.Save();
+                await _unitOfWork.OrderDetail.AddAsync(orderDetail);
             }
+            await _unitOfWork.SaveAsync();
 
             _unitOfWork.ShoppingCart.RemoveRange(ShoppingCartVM.ListCart);
-            _unitOfWork.Save();
+            await _unitOfWork.SaveAsync();
 
-            return RedirectToAction(nameof(Index), nameof(HomeController));
+            return RedirectToAction(nameof(Index), "Home");
         }
 
         public async Task<IActionResult> Plus(int cartId)
