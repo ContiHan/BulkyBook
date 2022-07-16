@@ -4,6 +4,7 @@ using BulkyBook.Models.ViewModels;
 using BulkyBook.Utility;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Stripe.Checkout;
 using System.Security.Claims;
 
 namespace BulkyBookWeb.Areas.Customer.Controllers
@@ -28,14 +29,14 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
 
             ShoppingCartVM = new()
             {
-                ListCart = _unitOfWork.ShoppingCart.GetAll(u => u.ApplicationUserId == claim.Value, includeProperties: "Product"),
+                EntireShoppingCart = _unitOfWork.ShoppingCart.GetAll(u => u.ApplicationUserId == claim.Value, includeProperties: "Product"),
                 OrderHeader = new()
             };
 
-            foreach (var cart in ShoppingCartVM.ListCart)
+            foreach (var cartItem in ShoppingCartVM.EntireShoppingCart)
             {
-                cart.PriceBasedOnQuantity = GetPriceBasedOnQuantity(cart.Count, cart.Product.Price, cart.Product.Price50, cart.Product.Price100);
-                ShoppingCartVM.OrderHeader.OrderTotal += cart.Count * cart.PriceBasedOnQuantity;
+                cartItem.PriceBasedOnQuantity = GetPriceBasedOnQuantity(cartItem.Count, cartItem.Product.Price, cartItem.Product.Price50, cartItem.Product.Price100);
+                ShoppingCartVM.OrderHeader.OrderTotal += cartItem.Count * cartItem.PriceBasedOnQuantity;
             }
 
             return View(ShoppingCartVM);
@@ -47,7 +48,7 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
 
             ShoppingCartVM = new()
             {
-                ListCart = _unitOfWork.ShoppingCart.GetAll(u => u.ApplicationUserId == claim.Value, includeProperties: nameof(Product)),
+                EntireShoppingCart = _unitOfWork.ShoppingCart.GetAll(u => u.ApplicationUserId == claim.Value, includeProperties: nameof(Product)),
                 OrderHeader = new()
                 {
                     ApplicationUser = await _unitOfWork.ApplicationUser.FirstOrDefaultAsync(u => u.Id == claim.Value)
@@ -61,10 +62,10 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
             ShoppingCartVM.OrderHeader.State = ShoppingCartVM.OrderHeader.ApplicationUser.State;
             ShoppingCartVM.OrderHeader.PostalCode = ShoppingCartVM.OrderHeader.ApplicationUser.PostalCode;
 
-            foreach (var cart in ShoppingCartVM.ListCart)
+            foreach (var cartItem in ShoppingCartVM.EntireShoppingCart)
             {
-                cart.PriceBasedOnQuantity = GetPriceBasedOnQuantity(cart.Count, cart.Product.Price, cart.Product.Price50, cart.Product.Price100);
-                ShoppingCartVM.OrderHeader.OrderTotal += cart.Count * cart.PriceBasedOnQuantity;
+                cartItem.PriceBasedOnQuantity = GetPriceBasedOnQuantity(cartItem.Count, cartItem.Product.Price, cartItem.Product.Price50, cartItem.Product.Price100);
+                ShoppingCartVM.OrderHeader.OrderTotal += cartItem.Count * cartItem.PriceBasedOnQuantity;
             }
 
             return View(ShoppingCartVM);
@@ -76,39 +77,102 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
         public async Task<IActionResult> SummaryPOST()
         {
             var claim = GetUserIdentity();
-            ShoppingCartVM.ListCart = _unitOfWork.ShoppingCart.GetAll(u => u.ApplicationUserId == claim.Value, includeProperties: nameof(Product));
+            ShoppingCartVM.EntireShoppingCart = _unitOfWork.ShoppingCart.GetAll(u => u.ApplicationUserId == claim.Value, includeProperties: nameof(Product));
 
             ShoppingCartVM.OrderHeader.PaymentStatus = SD.PaymentStatusPending;
             ShoppingCartVM.OrderHeader.OrderStatus = SD.StatusPending;
             ShoppingCartVM.OrderHeader.OrderDate = DateTime.Now;
             ShoppingCartVM.OrderHeader.ApplicationUserId = claim.Value;
 
-            foreach (var cart in ShoppingCartVM.ListCart)
+            foreach (var cartItem in ShoppingCartVM.EntireShoppingCart)
             {
-                cart.PriceBasedOnQuantity = GetPriceBasedOnQuantity(cart.Count, cart.Product.Price, cart.Product.Price50, cart.Product.Price100);
-                ShoppingCartVM.OrderHeader.OrderTotal += cart.Count * cart.PriceBasedOnQuantity;
+                cartItem.PriceBasedOnQuantity = GetPriceBasedOnQuantity(cartItem.Count, cartItem.Product.Price, cartItem.Product.Price50, cartItem.Product.Price100);
+                ShoppingCartVM.OrderHeader.OrderTotal += cartItem.Count * cartItem.PriceBasedOnQuantity;
             }
 
             await _unitOfWork.OrderHeader.AddAsync(ShoppingCartVM.OrderHeader);
             await _unitOfWork.SaveAsync();
 
-            foreach (var cart in ShoppingCartVM.ListCart)
+            foreach (var cartItem in ShoppingCartVM.EntireShoppingCart)
             {
                 OrderDetail orderDetail = new()
                 {
-                    ProductId = cart.ProductId,
+                    ProductId = cartItem.ProductId,
                     OrderId = ShoppingCartVM.OrderHeader.Id,
-                    Price = cart.PriceBasedOnQuantity,
-                    Count = cart.Count
+                    Price = cartItem.PriceBasedOnQuantity,
+                    Count = cartItem.Count
                 };
                 await _unitOfWork.OrderDetail.AddAsync(orderDetail);
             }
             await _unitOfWork.SaveAsync();
 
-            _unitOfWork.ShoppingCart.RemoveRange(ShoppingCartVM.ListCart);
+
+            // STRIPE SETTINGS
+            // START
+            var domain = "https://localhost:44306/";
+            var options = new SessionCreateOptions
+            {
+                PaymentMethodTypes = new List<string>
+                {
+                    "card",
+                },
+                LineItems = new List<SessionLineItemOptions>(),
+                Mode = "payment",
+                SuccessUrl = domain + $"customer/cart/OrderConfirmation?id={ShoppingCartVM.OrderHeader.Id}",
+                CancelUrl = domain + $"customer/cart/index",
+            };
+
+            foreach (var cartItem in ShoppingCartVM.EntireShoppingCart)
+            {
+                var sessionLineItem = new SessionLineItemOptions
+                {
+                    PriceData = new SessionLineItemPriceDataOptions
+                    {
+                        UnitAmount = (long)(cartItem.PriceBasedOnQuantity * 100),
+                        Currency = "czk",
+                        ProductData = new SessionLineItemPriceDataProductDataOptions
+                        {
+                            Name = cartItem.Product.Title,
+                        },
+
+                    },
+                    Quantity = cartItem.Count,
+                };
+                options.LineItems.Add(sessionLineItem);
+            }
+
+            var service = new SessionService();
+            Session session = service.Create(options);
+            _unitOfWork.OrderHeader.UpdateStripePaymentId(ShoppingCartVM.OrderHeader.Id, session.Id, session.PaymentIntentId);
             await _unitOfWork.SaveAsync();
 
-            return RedirectToAction(nameof(Index), "Home");
+            Response.Headers.Add("Location", session.Url);
+            return new StatusCodeResult(303);
+            // STRIPE SETTINGS
+            // END
+
+
+            //_unitOfWork.ShoppingCart.RemoveRange(ShoppingCartVM.EntireShoppingCart);
+            //await _unitOfWork.SaveAsync();
+
+            //return RedirectToAction(nameof(Index), "Home");
+        }
+
+        public async Task<IActionResult> OrderConfirmation(int id)
+        {
+            OrderHeader orderHeader = _unitOfWork.OrderHeader.FirstOrDefault(u => u.Id == id);
+            var service = new SessionService();
+            Session session = await service.GetAsync(orderHeader.SessionId);
+            if (session.PaymentStatus.ToLower() == "paid")
+            {
+                _unitOfWork.OrderHeader.UpdateStatus(id, SD.StatusApproved, SD.PaymentStatusApproved);
+                await _unitOfWork.SaveAsync();
+            }
+            var entireShoppingCart = _unitOfWork.ShoppingCart.GetAll(u => u.ApplicationUserId == orderHeader.ApplicationUserId).ToList();
+            _unitOfWork.ShoppingCart.RemoveRange(entireShoppingCart);
+            await _unitOfWork.SaveAsync();
+
+            return View(id);
         }
 
         public async Task<IActionResult> Plus(int cartId)
@@ -125,7 +189,7 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
 
             if (cart.Count <= 1)
             {
-                // if there is last product and someone remove it, remove product from cart
+                // if there is last product and someone remove it, remove product from cartItem
                 _unitOfWork.ShoppingCart.Remove(cart);
             }
             else
