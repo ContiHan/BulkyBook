@@ -1,11 +1,14 @@
 ﻿using BulkyBook.DataAccess.Repository.IRepository;
 using BulkyBook.Models;
 using BulkyBook.Utility;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BulkyBookWeb.Areas.Admin.Controllers
 {
     [Area(nameof(Admin))]
+	[Authorize]
     public class OrderController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -24,7 +27,18 @@ namespace BulkyBookWeb.Areas.Admin.Controllers
         [HttpGet]
         public IActionResult GetAll(string status)
         {
-            var orderHeaders = _unitOfWork.OrderHeader.GetAll(includeProperties: nameof(ApplicationUser));
+            IEnumerable<OrderHeader> orderHeaders;
+
+            if (User.IsInRole(SD.RoleAdmin) || User.IsInRole(SD.RoleEmployee))
+            {
+                orderHeaders = _unitOfWork.OrderHeader.GetAll(includeProperties: nameof(ApplicationUser)); 
+            }
+            else
+            {
+                var claimsIdentity = (ClaimsIdentity)User.Identity;
+                var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+                orderHeaders = _unitOfWork.OrderHeader.GetAll(u => u.ApplicationUserId == claim.Value, includeProperties: nameof(ApplicationUser));
+            }
 
             switch (status)
             {
