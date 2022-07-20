@@ -32,9 +32,19 @@ namespace BulkyBook.DataAccess.Repository
         }
 
 
-        public T FirstOrDefault(Expression<Func<T, bool>> filter, string? includeProperties = null)
+        public T FirstOrDefault(Expression<Func<T, bool>> filter, string? includeProperties = null, bool tracked = true)
         {
-            IQueryable<T> query = dbSet;
+            IQueryable<T> query;
+
+            if (tracked)
+            {
+                query = dbSet;
+            }
+            else
+            {
+                query = dbSet.AsNoTracking();
+            }
+
             query = query.Where(filter);
             query = GetIncludeProperties(includeProperties, query);
             var result = query.FirstOrDefault();
@@ -42,9 +52,19 @@ namespace BulkyBook.DataAccess.Repository
             return result;
         }
 
-        public async Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> filter, string? includeProperties = null)
+        public async Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> filter, string? includeProperties = null, bool tracked = true)
         {
-            IQueryable<T> query = dbSet;
+            IQueryable<T> query;
+
+            if (tracked)
+            {
+                query = dbSet;
+            }
+            else
+            {
+                query = dbSet.AsNoTracking();
+            }
+
             query = query.Where(filter);
             query = GetIncludeProperties(includeProperties, query);
             var result = await query.FirstOrDefaultAsync();
