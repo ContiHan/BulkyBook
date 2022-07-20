@@ -41,7 +41,7 @@ namespace BulkyBookWeb.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateOrderHeader()
         {
-            var orderHeader = await _unitOfWork.OrderHeader.FirstOrDefaultAsync(u => u.Id == OrderVM.OrderHeader.Id);
+            var orderHeader = await _unitOfWork.OrderHeader.FirstOrDefaultAsync(u => u.Id == OrderVM.OrderHeader.Id, tracked: false);
             orderHeader.Name = OrderVM.OrderHeader.Name;
             orderHeader.PhoneNumber = OrderVM.OrderHeader.PhoneNumber;
             orderHeader.StreetAddress = OrderVM.OrderHeader.StreetAddress;
@@ -61,6 +61,31 @@ namespace BulkyBookWeb.Areas.Admin.Controllers
             await _unitOfWork.SaveAsync();
 
             return RedirectToAction(nameof(Details), new { OrderId = orderHeader.Id });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> StartProcessing()
+        {
+            _unitOfWork.OrderHeader.UpdateStatus(OrderVM.OrderHeader.Id, SD.StatusInProcess);
+            await _unitOfWork.SaveAsync();
+            return RedirectToAction(nameof(Details), new { OrderId = OrderVM.OrderHeader.Id });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ShipOrder()
+        {
+            var orderHeader = await _unitOfWork.OrderHeader.FirstOrDefaultAsync(u => u.Id == OrderVM.OrderHeader.Id, tracked: false);
+            orderHeader.TrackingNumber = OrderVM.OrderHeader.TrackingNumber;
+            orderHeader.Carrier = OrderVM.OrderHeader.Carrier;
+            orderHeader.OrderStatus = SD.StatusShipped;
+            orderHeader.ShippingDate = DateTime.Now;
+
+            _unitOfWork.OrderHeader.Update(orderHeader);
+            await _unitOfWork.SaveAsync();
+
+            return RedirectToAction(nameof(Details), new { OrderId = OrderVM.OrderHeader.Id });
         }
 
         #region API CALLS
