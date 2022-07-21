@@ -91,12 +91,12 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
             if (applicationUser.CompanyId.GetValueOrDefault() == 0)
             {
                 ShoppingCartVM.OrderHeader.PaymentStatus = SD.PaymentStatusPending;
-                ShoppingCartVM.OrderHeader.OrderStatus = SD.StatusPending;
+                ShoppingCartVM.OrderHeader.OrderStatus = SD.OrderStatusPending;
             }
             else
             {
                 ShoppingCartVM.OrderHeader.PaymentStatus = SD.PaymentStatusDelayedPayment;
-                ShoppingCartVM.OrderHeader.OrderStatus = SD.StatusApproved;
+                ShoppingCartVM.OrderHeader.OrderStatus = SD.OrderStatusApproved;
             }
 
             await _unitOfWork.OrderHeader.AddAsync(ShoppingCartVM.OrderHeader);
@@ -177,7 +177,7 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
                 Session session = await service.GetAsync(orderHeader.SessionId);
                 if (session.PaymentStatus.ToLower() == "paid")
                 {
-                    _unitOfWork.OrderHeader.UpdateStatus(id, SD.StatusApproved, SD.PaymentStatusApproved);
+                    _unitOfWork.OrderHeader.UpdateStatus(id, SD.OrderStatusApproved, SD.PaymentStatusApproved);
                     await _unitOfWork.SaveAsync();
                 }
             }
