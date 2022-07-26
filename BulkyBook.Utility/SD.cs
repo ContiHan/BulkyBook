@@ -28,5 +28,8 @@ namespace BulkyBook.Utility
         public const string PaymentStatusRejected = "Rejected";
         public const string PaymentStatusRefunded = "Refunded";
         public const string PaymentStatusCancelled = "Cancelled";
+
+        // session key names
+        public const string SessionCart = "SessionShoppingCart";
     }
 }

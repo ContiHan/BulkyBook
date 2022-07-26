@@ -203,13 +203,15 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
             {
                 // if there is last product and someone remove it, remove product from cartItem
                 _unitOfWork.ShoppingCart.Remove(cart);
+
+                var claim = GetUserIdentity();
+                HttpContext.Session.SetInt32(SD.SessionCart, _unitOfWork.ShoppingCart.GetAll(u => u.ApplicationUserId == claim.Value).ToList().Count - 1);
             }
             else
             {
                 // only decrement by 1
                 _unitOfWork.ShoppingCart.DecrementCount(cart, 1);
             }
-
             await _unitOfWork.SaveAsync();
             return RedirectToAction(nameof(Index));
         }
@@ -219,6 +221,10 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
             var cart = await _unitOfWork.ShoppingCart.FirstOrDefaultAsync(u => u.Id == cartId);
             _unitOfWork.ShoppingCart.Remove(cart);
             await _unitOfWork.SaveAsync();
+
+            var claim = GetUserIdentity();
+            HttpContext.Session.SetInt32(SD.SessionCart, _unitOfWork.ShoppingCart.GetAll(u => u.ApplicationUserId == claim.Value).ToList().Count);
+
             return RedirectToAction(nameof(Index));
         }
 
