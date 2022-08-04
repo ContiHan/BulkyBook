@@ -25,8 +25,8 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddSingleton<IEmailSender, EmailSender>();
 builder.Services.AddAuthentication().AddFacebook(options =>
 {
-    options.AppId = "375627994647514";
-    options.AppSecret = "3ec266f1b3bfccc5ac5e7cc642f29bdf";
+    options.AppId = builder.Configuration.GetSection(SD.Facebook).GetValue<string>(SD.AppId);
+    options.AppSecret = builder.Configuration.GetSection(SD.Facebook).GetValue<string>(SD.AppSecret);
 });
 builder.Services.ConfigureApplicationCookie(options =>
 {

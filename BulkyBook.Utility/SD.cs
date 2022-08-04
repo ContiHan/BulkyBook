@@ -31,5 +31,10 @@ namespace BulkyBook.Utility
 
         // session key names
         public const string SessionCart = "SessionShoppingCart";
+
+        // facebook app settings
+        public const string Facebook = "Facebook";
+        public const string AppId = "AppId";
+        public const string AppSecret = "AppSecret";
     }
 }
