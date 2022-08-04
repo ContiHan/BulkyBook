@@ -184,6 +184,7 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
             var entireShoppingCart = _unitOfWork.ShoppingCart.GetAll(u => u.ApplicationUserId == orderHeader.ApplicationUserId).ToList();
             _unitOfWork.ShoppingCart.RemoveRange(entireShoppingCart);
             await _unitOfWork.SaveAsync();
+            HttpContext.Session.Clear();
             return View(id);
         }
 
