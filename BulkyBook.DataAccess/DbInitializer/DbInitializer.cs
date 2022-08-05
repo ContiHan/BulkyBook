@@ -66,7 +66,6 @@ namespace BulkyBook.DataAccess.DbInitializer
                 var adminUser = _db.ApplicationUsers.FirstOrDefault(a => a.Email == "admin@admin.com");
                 _userManager.AddToRoleAsync(adminUser, SD.RoleAdmin).GetAwaiter().GetResult();
             }
-            return;
         }
     }
 }
