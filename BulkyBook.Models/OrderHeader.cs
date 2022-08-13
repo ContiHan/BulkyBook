@@ -44,9 +44,11 @@ namespace BulkyBook.Models
 
 
         [Required]
+        [Display(Name = "Phone Number")]
         public string PhoneNumber { get; set; }
         
         [Required]
+        [Display(Name = "Street Address")]
         public string StreetAddress { get; set; }
         
         [Required]
@@ -56,6 +58,7 @@ namespace BulkyBook.Models
         public string State { get; set; }
         
         [Required]
+        [Display(Name = "Postal Code")]
         public string PostalCode { get; set; }
         
         [Required]
