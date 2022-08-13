@@ -1,4 +1,5 @@
-﻿@model IEnumerable<BulkyBook.Models.Product>
+﻿@using System.Globalization
+@model IEnumerable<BulkyBook.Models.Product>
 
 <div class="row pb-3">
 	@foreach (var product in Model)
@@ -11,8 +12,8 @@
 						<div class="card-body">
 							<p class="card-title h5 text-primary">@product.Title</p>
 							<p class="card-title text-info">by <b>@product.Author</b></p>
-							<p>List Price: <strike><b>@product.ListPrice.ToString("c")</b></strike></p>
-							<p>As low as: <b>@product.Price100.ToString("c")</b></p>
+							<p>List Price: <strike><b>@product.ListPrice.ToString("c", CultureInfo.CreateSpecificCulture("cs-CZ"))</b></strike></p>
+							<p>As low as: <b>@product.Price100.ToString("c", CultureInfo.CreateSpecificCulture("cs-CZ"))</b></p>
 						</div>
 					</div>
 					<div>

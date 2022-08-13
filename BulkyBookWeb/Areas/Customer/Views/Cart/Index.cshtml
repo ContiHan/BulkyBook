@@ -1,4 +1,5 @@
-﻿@model BulkyBook.Models.ViewModels.ShoppingCartVM
+﻿@using System.Globalization
+@model BulkyBook.Models.ViewModels.ShoppingCartVM
 
 <form method="post">
 	<br />
@@ -29,7 +30,7 @@
 						</div>
 						<div class="col-12  col-lg-5 text-center row">
 							<div class="col-4 text-md-right pt-4">
-								<h6><strong>@cart.PriceBasedOnQuantity.ToString("c")<span class="text-muted"> x </span>@cart.Count</strong></h6>
+								<h6><strong>@cart.PriceBasedOnQuantity.ToString("c", CultureInfo.CreateSpecificCulture("cs-CZ"))<span class="text-muted"> x </span>@cart.Count</strong></h6>
 							</div>
 							<div class="col-6 col-sm-4 col-lg-6 pt-2">
 								<div class="w-75 btn-group" role="group">
@@ -57,7 +58,7 @@
 						<ul class="list-group">
 							<li class="list-group-item d-flex justify-content-between bg-light">
 								<span class="text-info">Total (CZK)</span>
-								<strong class="text-info">@Model.OrderHeader.OrderTotal.ToString("c")</strong>
+								<strong class="text-info">@Model.OrderHeader.OrderTotal.ToString("c", CultureInfo.CreateSpecificCulture("cs-CZ"))</strong>
 							</li>
 						</ul>
 					</div>

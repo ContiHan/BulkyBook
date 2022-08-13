@@ -1,4 +1,5 @@
 ﻿@using BulkyBook.Utility
+@using System.Globalization
 @model BulkyBook.Models.ViewModels.OrderVM
 
 <form method="post">
@@ -209,11 +210,11 @@
                                         <div class="row container">
                                             <div class="col-8">
                                                 <h6 class="my-0 text-primary">@orderDetail.Product.Title</h6>
-                                                <small class="text-muted">Price : @orderDetail.Price.ToString("c")</small><br />
+                                                <small class="text-muted">Price : @orderDetail.Price.ToString("c", CultureInfo.CreateSpecificCulture("cs-CZ"))</small><br />
                                                 <small class="text-muted">Quantity : @orderDetail.Count</small>
                                             </div>
                                             <div class="col-4 text-end">
-                                                <p class="text-success">@((orderDetail.Count * orderDetail.Price).ToString("c"))</p>
+                                                <p class="text-success">@((orderDetail.Count * orderDetail.Price).ToString("c", CultureInfo.CreateSpecificCulture("cs-CZ")))</p>
                                             </div>
                                         </div>
                                     </li>
@@ -224,7 +225,7 @@
                                             <h5 class="text-white">TOTAL</h5>
                                         </div>
                                         <div class="col-6 text-end">
-                                            <h5 class="text-white">@Model.OrderHeader.OrderTotal.ToString("c")</h5>
+                                            <h5 class="text-white">@Model.OrderHeader.OrderTotal.ToString("c", CultureInfo.CreateSpecificCulture("cs-CZ"))</h5>
                                         </div>
                                     </div>
                                 </li>
