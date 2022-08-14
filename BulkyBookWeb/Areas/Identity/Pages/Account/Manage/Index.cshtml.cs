@@ -6,6 +6,8 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using BulkyBook.DataAccess.Repository.IRepository;
+using BulkyBook.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -16,13 +18,16 @@ namespace BulkyBookWeb.Areas.Identity.Pages.Account.Manage
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly IUnitOfWork _unitOfWork;
 
         public IndexModel(
             UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager)
+            SignInManager<IdentityUser> signInManager,
+            IUnitOfWork unitOfWork)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _unitOfWork = unitOfWork;
         }
 
         /// <summary>
@@ -55,21 +60,41 @@ namespace BulkyBookWeb.Areas.Identity.Pages.Account.Manage
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
-            [Phone]
+            [Display(Name = "Street address")]
+            public string StreetAddress { get; set; }
+
+            public string City { get; set; }
+
+            public string State { get; set; }
+
+            [DataType(DataType.PostalCode)]
+            [Display(Name = "Postal code")]
+            public string PostalCode { get; set; }
+
+            [DataType(DataType.PhoneNumber)]
             [Display(Name = "Phone number")]
             public string PhoneNumber { get; set; }
         }
 
         private async Task LoadAsync(IdentityUser user)
         {
+            var applicationUser = await _unitOfWork.ApplicationUser.FirstOrDefaultAsync(u => u.Id == user.Id);
             var userName = await _userManager.GetUserNameAsync(user);
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
+            var streetAddress = applicationUser.StreetAddress;
+            var city = applicationUser.City;
+            var state = applicationUser.State;
+            var postalCode = applicationUser.PostalCode;
 
             Username = userName;
 
             Input = new InputModel
             {
-                PhoneNumber = phoneNumber
+                PhoneNumber = phoneNumber,
+                StreetAddress = streetAddress,
+                City = city,
+                State = state,
+                PostalCode = postalCode
             };
         }
 
@@ -109,6 +134,14 @@ namespace BulkyBookWeb.Areas.Identity.Pages.Account.Manage
                     return RedirectToPage();
                 }
             }
+
+            var applicationUser = await _unitOfWork.ApplicationUser.FirstOrDefaultAsync(u => u.Id == user.Id);
+            applicationUser.StreetAddress = Input.StreetAddress;
+            applicationUser.City = Input.City;
+            applicationUser.State = Input.State;
+            applicationUser.PostalCode = Input.PostalCode;
+            _unitOfWork.ApplicationUser.UpdateAddress(applicationUser);
+            await _unitOfWork.SaveAsync();
 
             await _signInManager.RefreshSignInAsync(user);
             StatusMessage = "Your profile has been updated";
