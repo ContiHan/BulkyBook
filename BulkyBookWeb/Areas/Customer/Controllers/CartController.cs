@@ -76,6 +76,16 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SummaryPOST()
         {
+            if (ModelState.GetFieldValidationState("OrderHeader.Name") == Microsoft.AspNetCore.Mvc.ModelBinding.ModelValidationState.Invalid ||
+                ModelState.GetFieldValidationState("OrderHeader.PhoneNumber") == Microsoft.AspNetCore.Mvc.ModelBinding.ModelValidationState.Invalid ||
+                ModelState.GetFieldValidationState("OrderHeader.StreetAddress") == Microsoft.AspNetCore.Mvc.ModelBinding.ModelValidationState.Invalid ||
+                ModelState.GetFieldValidationState("OrderHeader.City") == Microsoft.AspNetCore.Mvc.ModelBinding.ModelValidationState.Invalid ||
+                ModelState.GetFieldValidationState("OrderHeader.State") == Microsoft.AspNetCore.Mvc.ModelBinding.ModelValidationState.Invalid ||
+                ModelState.GetFieldValidationState("OrderHeader.PostalCode") == Microsoft.AspNetCore.Mvc.ModelBinding.ModelValidationState.Invalid)
+            {
+                return await Summary();
+            }
+
             var claim = GetUserIdentity();
             ShoppingCartVM.EntireShoppingCart = _unitOfWork.ShoppingCart.GetAll(u => u.ApplicationUserId == claim.Value, includeProperties: nameof(Product));
             ShoppingCartVM.OrderHeader.OrderDate = DateTime.Now;
