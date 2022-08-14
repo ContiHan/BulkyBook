@@ -129,7 +129,7 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
             {
                 // STRIPE SETTINGS
                 // START
-                var domain = "https://localhost:44306/";
+                var domain = $"https://{Request.Host}/";
                 var options = new SessionCreateOptions
                 {
                     PaymentMethodTypes = new List<string>
